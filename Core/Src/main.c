@@ -19,11 +19,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "Services/pwm_service.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "Drivers/l298n_driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,7 +43,7 @@
 TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
-
+L298N_HandleTypeDef bridge_handler;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -52,7 +51,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
-
+void L298N_Init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -90,13 +89,13 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  PwmService_SetDutyCycle(&htim3, TIM_CHANNEL_2, 0.3);
-  HAL_GPIO_WritePin(L298N_IN1_GPIO_Port, L298N_IN1_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(L298N_IN2_GPIO_Port, L298N_IN2_Pin, GPIO_PIN_RESET);
+  L298N_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  L298NDriver_SetSpeed(&bridge_handler, 0.5);
+  L298NDriver_MoveForward(&bridge_handler);
   while (1)
   {
     /* USER CODE END WHILE */
@@ -241,7 +240,17 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void L298N_Init(void)
+{
+  bridge_handler.htim = &htim3;
+  bridge_handler.channel = TIM_CHANNEL_2;
+  bridge_handler.IN1_GPIO = L298N_IN1_GPIO_Port;
+  bridge_handler.IN1_Pin = L298N_IN1_Pin;
+  bridge_handler.IN2_GPIO = L298N_IN2_GPIO_Port;
+  bridge_handler.IN2_Pin = L298N_IN2_Pin;
 
+  L298NDriver_Init(&bridge_handler, 2000);
+}
 /* USER CODE END 4 */
 
 /**

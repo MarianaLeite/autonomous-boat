@@ -1,3 +1,14 @@
+/**
+ * @file pwm_service.c
+ * @author Mariana Leite
+ * @brief 
+ * @version 0.1
+ * @date 2023-09-27
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #include "Services/pwm_service.h"
 
 void PwmService_SetPeriod(TIM_HandleTypeDef* htim, uint32_t channel, uint32_t period)
