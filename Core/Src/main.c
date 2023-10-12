@@ -19,8 +19,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <string.h>
 #include "Drivers/l298n_driver.h"
 /* USER CODE END Includes */
 
@@ -42,15 +44,21 @@
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
+UART_HandleTypeDef huart3;
+DMA_HandleTypeDef hdma_usart3_rx;
+
 /* USER CODE BEGIN PV */
 L298N_HandleTypeDef bridge_handler;
+uint8_t buffer[100];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void L298N_Init(void);
 /* USER CODE END PFP */
@@ -88,16 +96,17 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_TIM3_Init();
   MX_TIM2_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-  L298N_Init();
+  __HAL_UART_ENABLE_IT(&huart3, UART_IT_IDLE);
+  HAL_UART_Receive_DMA(&huart3, buffer, sizeof(buffer));
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  L298NDriver_SetSpeed(&bridge_handler, 0.5);
-  L298NDriver_MoveForward(&bridge_handler);
   while (1)
   {
     /* USER CODE END WHILE */
@@ -251,6 +260,55 @@ static void MX_TIM3_Init(void)
 }
 
 /**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 9600;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Stream1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -297,6 +355,18 @@ void L298N_Init(void)
   bridge_handler.IN2_Pin = L298N_IN2_Pin;
 
   L298NDriver_Init(&bridge_handler, 2000);
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (__HAL_UART_GET_FLAG(huart, UART_FLAG_IDLE))
+  {
+    __HAL_UART_CLEAR_IDLEFLAG(huart);
+    HAL_UART_DMAStop(huart);
+    // Include UART response handler here
+    memset(buffer, 0, sizeof(100));
+    HAL_UART_Receive_DMA(huart, buffer, sizeof(buffer));
+  }
 }
 /* USER CODE END 4 */
 
