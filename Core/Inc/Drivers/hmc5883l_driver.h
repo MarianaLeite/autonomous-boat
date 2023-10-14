@@ -17,7 +17,7 @@
 #define HMC5883l_ADDRESS 		(0x3D)
 #define HMC5883l_CONF_REG_A 	(0x00)
 #define HMC5883l_CONF_REG_B 	(0x01)
-#define HMC5883l_MODE_REG 		(0x00)
+#define HMC5883l_MODE_REG 		(0x02)
 #define HMC5883l_DATAX_MSB_REG 	(0x03)
 #define HMC5883l_DATAX_LSB_REG 	(0x04)
 #define HMC5883l_DATAZ_MSB_REG 	(0x05)
