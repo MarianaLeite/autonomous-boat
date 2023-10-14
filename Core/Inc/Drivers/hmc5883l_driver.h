@@ -31,7 +31,7 @@ typedef struct
 	int16_t x_axis;
 	int16_t y_axis;
 	int16_t z_axis;
-} HMC5883L_AxisTypeDef;
+} HMC5883L_DataTypeDef;
 
 typedef enum
 {
@@ -89,16 +89,18 @@ typedef enum
 
 typedef struct
 {
+	I2C_HandleTypeDef *hi2c;
 	HMC5883L_SamplesAvgTypeDef samples_avg;
 	HMC5883L_OutputRateTypeDef output_rate;
 	HMC5883L_MeasurementModeTypeDef measurement_mode;
 	HMC5883L_GainTypeDef gain;
 	HMC5883L_I2cSpeedTypeDef i2c_speed;
 	HMC5883L_OperationModeTypeDef operation_mode;
-} HMC5883L_ConfigTypeDef;
 
-void HMC5883LDriver_Init(I2C_HandleTypeDef *hi2c, HMC5883L_ConfigTypeDef *config, uint32_t timeout);
+} HMC5883L_HandlerTypeDef;
 
-void HMC5883LDriver_Read(I2C_HandleTypeDef *hi2c, HMC5883L_AxisTypeDef *data, uint32_t timeout);
+void HMC5883LDriver_Init(HMC5883L_HandlerTypeDef *handler, uint32_t timeout);
+
+void HMC5883LDriver_Read(HMC5883L_HandlerTypeDef *handler, HMC5883L_DataTypeDef *data, uint32_t timeout);
 
 #endif /* INC_DRIVERS_HMC5883L_DRIVER_H */
