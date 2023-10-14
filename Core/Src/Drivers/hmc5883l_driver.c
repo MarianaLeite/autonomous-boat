@@ -10,7 +10,7 @@
  */
 
 
-#include "hmc5883l_driver.h"
+#include "Drivers/hmc5883l_driver.h"
 
 void HMC5883LDriver_Init(I2C_HandleTypeDef *hi2c, HMC5883L_ConfigTypeDef *config, uint32_t timeout)
 {
