@@ -100,7 +100,7 @@ typedef struct
 } HMC5883L_HandlerTypeDef;
 
 /**
- * @brief 
+ * @brief Initialize the HMC5883L module with the provided configurations.
  * 
  * @param handler HMC5883L_HandlerTypeDef pointer to module handler
  * @param timeout Timeout duration
@@ -108,7 +108,7 @@ typedef struct
 void HMC5883LDriver_Init(HMC5883L_HandlerTypeDef *handler, uint32_t timeout);
 
 /**
- * @brief 
+ * @brief Read current axis values
  * 
  * @param handler HMC5883L_HandlerTypeDef pointer to module handler
  * @param data HMC5883L_DataTypeDef pointer to read data
