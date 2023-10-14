@@ -99,8 +99,21 @@ typedef struct
 
 } HMC5883L_HandlerTypeDef;
 
+/**
+ * @brief 
+ * 
+ * @param handler HMC5883L_HandlerTypeDef pointer to module handler
+ * @param timeout Timeout duration
+ */
 void HMC5883LDriver_Init(HMC5883L_HandlerTypeDef *handler, uint32_t timeout);
 
+/**
+ * @brief 
+ * 
+ * @param handler HMC5883L_HandlerTypeDef pointer to module handler
+ * @param data HMC5883L_DataTypeDef pointer to read data
+ * @param timeout Timeout duration
+ */
 void HMC5883LDriver_Read(HMC5883L_HandlerTypeDef *handler, HMC5883L_DataTypeDef *data, uint32_t timeout);
 
 #endif /* INC_DRIVERS_HMC5883L_DRIVER_H */
