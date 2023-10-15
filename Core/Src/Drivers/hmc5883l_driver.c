@@ -32,14 +32,14 @@ void HMC5883LDriver_Init(HMC5883L_HandlerTypeDef *handler, uint32_t timeout)
 	HAL_I2C_Mem_Write(handler->hi2c, HMC5883l_ADDRESS, HMC5883l_MODE_REG, 1, &mod_reg, 1, timeout);
 }
 
-void HMC5883LDriver_Read(HMC5883L_HandlerTypeDef *handler, HMC5883L_DataTypeDef *data, uint32_t timeout)
+bool HMC5883LDriver_Read(HMC5883L_HandlerTypeDef *handler, HMC5883L_DataTypeDef *data, uint32_t timeout)
 {
 	uint8_t buffer[6];
 
 	HAL_I2C_Mem_Read(handler->hi2c, HMC5883l_ADDRESS, HMC5883l_STATUS_REG, 1, buffer, 1, timeout);
 
 	if ((buffer[0] & 0x01) != 1) {
-		return;
+		return false;
 	}
 
 	HAL_I2C_Mem_Read(handler->hi2c, HMC5883l_ADDRESS, HMC5883l_DATAX_MSB_REG, 1, buffer, 6, timeout);
@@ -47,4 +47,6 @@ void HMC5883LDriver_Read(HMC5883L_HandlerTypeDef *handler, HMC5883L_DataTypeDef 
 	data->x_axis = (buffer[0] << 8) | buffer[1];
 	data->z_axis = (buffer[2] << 8) | buffer[3];
 	data->y_axis = (buffer[0] << 4) | buffer[5];
+	
+	return true;
 }
