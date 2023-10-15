@@ -13,6 +13,7 @@
 #define INC_DRIVERS_HMC5883L_DRIVER_H
 
 #include "stm32f4xx_hal.h"
+#include "stdbool.h"
 
 #define HMC5883l_ADDRESS       (0x3D)
 #define HMC5883l_CONF_REG_A    (0x00)
@@ -114,6 +115,6 @@ void HMC5883LDriver_Init(HMC5883L_HandlerTypeDef *handler, uint32_t timeout);
  * @param data HMC5883L_DataTypeDef pointer to read data
  * @param timeout Timeout duration
  */
-void HMC5883LDriver_Read(HMC5883L_HandlerTypeDef *handler, HMC5883L_DataTypeDef *data, uint32_t timeout);
+bool HMC5883LDriver_Read(HMC5883L_HandlerTypeDef *handler, HMC5883L_DataTypeDef *data, uint32_t timeout);
 
 #endif /* INC_DRIVERS_HMC5883L_DRIVER_H */
