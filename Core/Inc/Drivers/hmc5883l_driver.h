@@ -15,17 +15,17 @@
 #include "stm32f4xx_hal.h"
 #include "stdbool.h"
 
-#define HMC5883l_ADDRESS       (0x3D)
-#define HMC5883l_CONF_REG_A    (0x00)
-#define HMC5883l_CONF_REG_B    (0x01)
-#define HMC5883l_MODE_REG      (0x02)
-#define HMC5883l_DATAX_MSB_REG (0x03)
-#define HMC5883l_DATAX_LSB_REG (0x04)
-#define HMC5883l_DATAZ_MSB_REG (0x05)
-#define HMC5883l_DATAZ_LSB_REG (0x06)
-#define HMC5883l_DATAY_MSB_REG (0x07)
-#define HMC5883l_DATAY_LSB_REG (0x08)
-#define HMC5883l_STATUS_REG    (0x09)
+#define HMC5883l_ADDRESS       0x3D
+#define HMC5883l_CONF_REG_A    0x00
+#define HMC5883l_CONF_REG_B    0x01
+#define HMC5883l_MODE_REG      0x02
+#define HMC5883l_DATAX_MSB_REG 0x03
+#define HMC5883l_DATAX_LSB_REG 0x04
+#define HMC5883l_DATAZ_MSB_REG 0x05
+#define HMC5883l_DATAZ_LSB_REG 0x06
+#define HMC5883l_DATAY_MSB_REG 0x07
+#define HMC5883l_DATAY_LSB_REG 0x08
+#define HMC5883l_STATUS_REG    0x09
 
 typedef struct
 {
@@ -66,7 +66,7 @@ typedef enum
 typedef enum
 {
 	HMC5883L_GAIN_0_88_GA,
-	HMC5883L_GAIN_1_3_GA,
+	HMC5883L_GAIN_1_3_GA,  // Default
 	HMC5883L_GAIN_1_9_GA,
 	HMC5883L_GAIN_2_5_GA,
 	HMC5883L_GAIN_4_0_GA,

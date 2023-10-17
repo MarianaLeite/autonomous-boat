@@ -46,7 +46,7 @@ bool HMC5883LDriver_Read(HMC5883L_HandlerTypeDef *handler, HMC5883L_DataTypeDef 
 
 	data->x_axis = (buffer[0] << 8) | buffer[1];
 	data->z_axis = (buffer[2] << 8) | buffer[3];
-	data->y_axis = (buffer[0] << 4) | buffer[5];
+	data->y_axis = (buffer[4] << 8) | buffer[5];
 	
 	return true;
 }
