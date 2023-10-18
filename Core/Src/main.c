@@ -26,6 +26,7 @@
 
 #include "Drivers/l298n_driver.h"
 #include "Drivers/hmc5883l_driver.h"
+#include "Services/compass_service.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -39,7 +40,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define MAGNETIC_DECLINATION 0.3508
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -52,6 +53,7 @@ TIM_HandleTypeDef htim3;
 L298N_HandleTypeDef bridge_handler;
 HMC5883L_HandlerTypeDef compass_handler;
 HMC5883L_DataTypeDef compass_data;
+CompassCalibrationParamsTypeDef compass_calibration_params;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -63,6 +65,7 @@ static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 void L298N_Init(void);
 void HMC5883L_Init(void);
+void HMC5883L_Calibrate(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -110,11 +113,19 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   L298NDriver_SetSpeed(&bridge_handler, 0.5);
   L298NDriver_MoveForward(&bridge_handler);
+
+//  HMC5883L_Calibrate();
+  compass_calibration_params.x_offset = 24;
+  compass_calibration_params.y_offset = 14;
+  compass_calibration_params.x_scale = 1.0;
+  compass_calibration_params.y_scale = (float)138/135;
+
   while (1)
   {
     HMC5883LDriver_Read(&compass_handler, &compass_data, 100);
 
-    float angle = atan2f(compass_data.x_axis, compass_data.y_axis) * 180.00 / M_PI;
+    float degress = CompassService_GetNormalizedDegressAngle(compass_data.x_axis, compass_data.y_axis,
+    		MAGNETIC_DECLINATION, &compass_calibration_params);
 
     HAL_Delay(200);
     /* USER CODE END WHILE */
@@ -361,6 +372,17 @@ void HMC5883L_Init(void)
   compass_handler.operation_mode = HMC5883L_CONTINUOUS_MEASUREMENT_MODE;
 
   HMC5883LDriver_Init(&compass_handler, 100);
+}
+
+void HMC5883L_Calibrate(void)
+{
+	CompassService_InitCalibrationParams(&compass_calibration_params);
+	for (int i=0; i<1000; i++)
+	{
+		HMC5883LDriver_Read(&compass_handler, &compass_data, 100);
+		CompassService_Calibrate(compass_data.x_axis, compass_data.y_axis, &compass_calibration_params);
+		HAL_Delay(10);
+	}
 }
 /* USER CODE END 4 */
 
