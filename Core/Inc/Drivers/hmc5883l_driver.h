@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef INC_DRIVERS_HMC5883L_DRIVER_H
-#define INC_DRIVERS_HMC5883L_DRIVER_H
+#ifndef HMC5883L_DRIVER_H
+#define HMC5883L_DRIVER_H
 
 #include "stm32f4xx_hal.h"
 #include "stdbool.h"
@@ -103,18 +103,18 @@ typedef struct
 /**
  * @brief Initialize the HMC5883L module with the provided configurations.
  * 
- * @param handler HMC5883L_HandlerTypeDef pointer to module handler
- * @param timeout Timeout duration
+ * @param handler HMC5883L_HandlerTypeDef pointer to module handler.
+ * @param timeout Timeout duration.
  */
 void HMC5883LDriver_Init(HMC5883L_HandlerTypeDef *handler, uint32_t timeout);
 
 /**
- * @brief Read current axis values
+ * @brief Read current axis values.
  * 
- * @param handler HMC5883L_HandlerTypeDef pointer to module handler
- * @param data HMC5883L_DataTypeDef pointer to read data
- * @param timeout Timeout duration
+ * @param handler HMC5883L_HandlerTypeDef pointer to module handler.
+ * @param data HMC5883L_DataTypeDef pointer to read data.
+ * @param timeout Timeout duration.
  */
 bool HMC5883LDriver_Read(HMC5883L_HandlerTypeDef *handler, HMC5883L_DataTypeDef *data, uint32_t timeout);
 
-#endif /* INC_DRIVERS_HMC5883L_DRIVER_H */
+#endif /* HMC5883L_DRIVER_H */
