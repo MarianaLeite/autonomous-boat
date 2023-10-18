@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef INC_SERVICES_COMPASS_SERVICE_H_
-#define INC_SERVICES_COMPASS_SERVICE_H_
+#ifndef COMPASS_SERVICE_H_
+#define COMPASS_SERVICE_H_
 
 #include <stdint.h>
 #include <math.h>
@@ -54,4 +54,4 @@ void CompassService_Calibrate(int16_t x_axis, int16_t y_axis, CompassCalibration
  */
 float CompassService_GetNormalizedDegressAngle(int16_t x_axis, int16_t y_axis, float magnetic_declination, CompassCalibrationParamsTypeDef *calibration_params);
 
-#endif /* INC_SERVICES_COMPASS_SERVICE_H_ */
+#endif /* COMPASS_SERVICE_H_ */
