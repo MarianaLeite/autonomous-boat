@@ -41,7 +41,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define MAGNETIC_DECLINATION 0.3508
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -81,7 +81,6 @@ PUTCHAR_PROTOTYPE
 
 void L298N_Init(void);
 void HMC5883L_Init(void);
-void HMC5883L_Calibrate(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -131,7 +130,7 @@ int main(void)
   L298NDriver_SetSpeed(&bridge_handler, 0.5);
   L298NDriver_MoveForward(&bridge_handler);
 
-//  HMC5883L_Calibrate();
+//  CompassService_HMC5883L_Calibrate(&compass_handler, &compass_calibration_params, 1000);
   compass_calibration_params.x_offset = 24;
   compass_calibration_params.y_offset = 14;
   compass_calibration_params.x_scale = 1.0;
@@ -141,8 +140,7 @@ int main(void)
   {
     HMC5883LDriver_Read(&compass_handler, &compass_data, 100);
 
-    float degress = CompassService_GetNormalizedDegressAngle(compass_data.x_axis, compass_data.y_axis,
-    		MAGNETIC_DECLINATION, &compass_calibration_params);
+    float degress = CompassService_GetNormalizedDegressAngle(compass_data.x_axis, compass_data.y_axis, &compass_calibration_params);
 
     printf("Angle: %d\n\r", (int)degress);
 
@@ -424,17 +422,6 @@ void HMC5883L_Init(void)
   compass_handler.operation_mode = HMC5883L_CONTINUOUS_MEASUREMENT_MODE;
 
   HMC5883LDriver_Init(&compass_handler, 100);
-}
-
-void HMC5883L_Calibrate(void)
-{
-	CompassService_InitCalibrationParams(&compass_calibration_params);
-	for (int i=0; i<1000; i++)
-	{
-		HMC5883LDriver_Read(&compass_handler, &compass_data, 100);
-		CompassService_Calibrate(compass_data.x_axis, compass_data.y_axis, &compass_calibration_params);
-		HAL_Delay(10);
-	}
 }
 /* USER CODE END 4 */
 

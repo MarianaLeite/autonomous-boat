@@ -15,6 +15,10 @@
 #include <stdint.h>
 #include <math.h>
 
+#include "Drivers/hmc5883l_driver.h"
+
+#define MAGNETIC_DECLINATION 0.3508
+
 typedef struct
 {
 	int16_t xmin;
@@ -48,10 +52,18 @@ void CompassService_Calibrate(int16_t x_axis, int16_t y_axis, CompassCalibration
  * 
  * @param x_axis Measured value for X axis.
  * @param y_axis Measured value for Y axis.
- * @param magnetic_declination Magnetic declination value for current location.
  * @param calibration_params CompassCalibrationParamsTypeDef pointer to stored calibration params.
  * @return float 
  */
-float CompassService_GetNormalizedDegressAngle(int16_t x_axis, int16_t y_axis, float magnetic_declination, CompassCalibrationParamsTypeDef *calibration_params);
+float CompassService_GetNormalizedDegressAngle(int16_t x_axis, int16_t y_axis, CompassCalibrationParamsTypeDef *calibration_params);
+
+/**
+ * @brief Calibrate HMC5883L over provided iterations.
+ * 
+ * @param compass_handler HMC5883L_HandlerTypeDef pointer to module handler.
+ * @param compass_calibration_params CompassCalibrationParamsTypeDef pointer to stored calibration params.
+ * @param iterations Number of iterations (measures) used for calibration.
+ */
+void CompassService_HMC5883L_Calibrate(HMC5883L_HandlerTypeDef *compass_handler, CompassCalibrationParamsTypeDef *compass_calibration_params, int iterations);
 
 #endif /* COMPASS_SERVICE_H_ */

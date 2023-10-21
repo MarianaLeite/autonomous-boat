@@ -53,14 +53,14 @@ void CompassService_Calibrate(int16_t x_axis, int16_t y_axis, CompassCalibration
 	}
 }
 
-float CompassService_GetNormalizedDegressAngle(int16_t x_axis, int16_t y_axis, float magnetic_declination, CompassCalibrationParamsTypeDef *calibration_params)
+float CompassService_GetNormalizedDegressAngle(int16_t x_axis, int16_t y_axis, CompassCalibrationParamsTypeDef *calibration_params)
 {
 	float x_norm = (x_axis - calibration_params->x_offset) * calibration_params->x_scale;
 	float y_norm = (y_axis - calibration_params->y_offset) * calibration_params->y_scale;
 
 	float heading = atan2f(y_norm, x_norm);
 
-	heading += (magnetic_declination > 0 ? magnetic_declination : -magnetic_declination);
+	heading += MAGNETIC_DECLINATION;
 
 	if (heading < 0)
 	{
@@ -74,4 +74,18 @@ float CompassService_GetNormalizedDegressAngle(int16_t x_axis, int16_t y_axis, f
 	float degress = heading * 180.00 / M_PI;
 
 	return degress;
+}
+
+void CompassService_HMC5883L_Calibrate(HMC5883L_HandlerTypeDef *compass_handler, CompassCalibrationParamsTypeDef *compass_calibration_params, int iterations)
+{
+	HMC5883L_DataTypeDef compass_data;
+
+	CompassService_InitCalibrationParams(compass_calibration_params);
+
+	for (int i=0; i<iterations; i++)
+	{
+		HMC5883LDriver_Read(compass_handler, &compass_data, 100);
+		CompassService_Calibrate(compass_data.x_axis, compass_data.y_axis, compass_calibration_params);
+		HAL_Delay(10);
+	}
 }
