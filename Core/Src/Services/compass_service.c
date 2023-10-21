@@ -44,12 +44,12 @@ void CompassService_Calibrate(int16_t x_axis, int16_t y_axis, CompassCalibration
 	if (x_var > y_var)
 	{
 		calibration_params->x_scale = 1.0;
-		calibration_params->y_scale = (float) x_var / y_var;
+		calibration_params->y_scale = y_var > 0 ? (float) x_var / y_var : 1.0;
 	}
 	else
 	{
 		calibration_params->y_scale = 1.0;
-		calibration_params->x_scale = (float) y_var / x_var;
+		calibration_params->x_scale = x_var > 0 ? (float) y_var / x_var : 1.0;
 	}
 }
 
