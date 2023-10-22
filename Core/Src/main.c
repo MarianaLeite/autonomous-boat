@@ -22,8 +22,12 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "Drivers/l298n_driver.h"
+#include "Drivers/jdy18_driver.h"
+#include "Services/beacons_service.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,7 +53,6 @@ DMA_HandleTypeDef hdma_usart3_rx;
 
 /* USER CODE BEGIN PV */
 L298N_HandleTypeDef bridge_handler;
-uint8_t buffer[100];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -101,15 +104,21 @@ int main(void)
   MX_TIM2_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-  __HAL_UART_ENABLE_IT(&huart3, UART_IT_IDLE);
-  HAL_UART_Receive_DMA(&huart3, buffer, sizeof(buffer));
+  BeaconsService_Init(&huart3);
   /* USER CODE END 2 */
+  char data[34];
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
+
+	  HAL_Delay(500);
+
+	  memset(data, 0, 34);
+	  sprintf(data, "AT+INQ\r\n");
+	  HAL_UART_Transmit(&huart3, (uint8_t *)data, strlen(data), HAL_MAX_DELAY);
 
     /* USER CODE BEGIN 3 */
   }
@@ -356,7 +365,7 @@ void L298N_Init(void)
 
   L298NDriver_Init(&bridge_handler, 2000);
 }
-
+/*
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if (__HAL_UART_GET_FLAG(huart, UART_FLAG_IDLE))
@@ -364,10 +373,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     __HAL_UART_CLEAR_IDLEFLAG(huart);
     HAL_UART_DMAStop(huart);
     // Include UART response handler here
-    memset(buffer, 0, sizeof(100));
+    memset(buffer, 0, 100);
     HAL_UART_Receive_DMA(huart, buffer, sizeof(buffer));
   }
 }
+*/
 /* USER CODE END 4 */
 
 /**

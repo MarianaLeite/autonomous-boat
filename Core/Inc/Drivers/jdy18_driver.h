@@ -13,6 +13,8 @@
 #define __JDY18_DRIVER_H
 
 #define MAX_SIZE_DATA 30
+#define INIT_MODULE_RESPONSE_SCAN "+DEV:"
+#define END_RESPONSE_SCAN "+STOP:SCAN"
 
 #include <stdint.h>
 #include <stdio.h>
