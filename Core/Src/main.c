@@ -27,7 +27,7 @@
 #include <string.h>
 #include "Drivers/l298n_driver.h"
 #include "Drivers/jdy18_driver.h"
-#include "Services/beacons_service.h"
+#include "Services/location_service.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -104,9 +104,8 @@ int main(void)
   MX_TIM2_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-  BeaconsService_Init(&huart3);
+  LocationService_Init(&huart3);
   /* USER CODE END 2 */
-  char data[34];
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -114,11 +113,8 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-	  HAL_Delay(500);
-
-	  memset(data, 0, 34);
-	  sprintf(data, "AT+INQ\r\n");
-	  HAL_UART_Transmit(&huart3, (uint8_t *)data, strlen(data), HAL_MAX_DELAY);
+	  HAL_Delay(100);
+	  LocationService_Scan(&huart3);
 
     /* USER CODE BEGIN 3 */
   }

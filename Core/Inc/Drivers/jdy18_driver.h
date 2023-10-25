@@ -15,13 +15,14 @@
 #define MAX_SIZE_DATA 30
 #define INIT_MODULE_RESPONSE_SCAN "+DEV:"
 #define END_RESPONSE_SCAN "+STOP:SCAN"
+#define MAX_SIZE_UART_BUFFER 1000
+#define MAX_DEVICE_LIST 100
 
+#include "stm32f4xx.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "stm32f4xx.h"
 
 typedef enum {
 	SET_NAME,
@@ -55,6 +56,33 @@ typedef enum {
     ODD_PARITY,
     EVEN_PARITY,
 } ParityParam_t;
+
+uint8_t uartBuffer[MAX_SIZE_UART_BUFFER];
+
+typedef struct {
+	char *mac;
+	int rssi;
+	char *name;
+} Device_t;
+
+/**
+ * @brief Rx Transfer completed callbacks.
+ * 
+ * @param huart UART_HandleTypeDef pointer to UART handler associated to the Bluetooth module.
+ */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
+
+/**
+ * @brief Initialize the Bluetooth module.
+ * 
+ * @param huart UART_HandleTypeDef pointer to UART handler associated to the Bluetooth module.
+ * @param name Name of Bluetooth module.
+ * @param baudRate Baud rate of Bluetooth module.
+ * @param role Role of Bluetooth module.
+ * @param parity Parity of Bluetooth module.
+ * @param stopBit Stop bit of Bluetooth module.
+ */
+void JDY18Driver_Init(UART_HandleTypeDef* huart, char *name, BaudRate_t baudRate, RoleParam_t role, ParityParam_t parity, uint8_t stopBit);
 
 /**
  * @brief Send data to Bluetooth module.
@@ -103,5 +131,12 @@ void JDY18Driver_SetParity(UART_HandleTypeDef* huart, ParityParam_t parity);
  * @param stopBit Stop bit of Bluetooth module.
  */
 void JDY18Driver_SetStopBit(UART_HandleTypeDef* huart, uint8_t stopBit);
+
+/**
+ * @brief Master mode: Inquire Bluetooth devices.
+ * 
+ * @param huart UART_HandleTypeDef pointer to UART handler associated to the Bluetooth module.
+ */
+void JDY18Driver_InquireDevices(UART_HandleTypeDef* huart);
 
 #endif /* __JDY18_DRIVER_H */

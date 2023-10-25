@@ -9,6 +9,38 @@ char *atInstructions[] = {
 	"AT+INQ"
 };
 
+Device_t *devices[MAX_DEVICE_LIST];
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (__HAL_UART_GET_FLAG(huart, UART_FLAG_IDLE))
+	{
+		__HAL_UART_CLEAR_IDLEFLAG(huart);
+		HAL_UART_DMAStop(huart);
+		// treat uartBuffer
+		memset(uartBuffer, 0, sizeof(uartBuffer));
+		HAL_UART_Receive_DMA(huart, uartBuffer, sizeof(uartBuffer));
+	}
+}
+
+void JDY18Driver_Init(UART_HandleTypeDef* huart, char *name, BaudRate_t baudRate, RoleParam_t role, ParityParam_t parity, uint8_t stopBit) {
+	__HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
+	HAL_UART_Receive_DMA(huart, uartBuffer, sizeof(uartBuffer));
+
+	JDY18Driver_SetName(huart, name);
+	HAL_Delay(200);
+	JDY18Driver_SetRole(huart, role);
+	HAL_Delay(200);
+	JDY18Driver_SetBaudRate(huart, baudRate);
+	HAL_Delay(200);
+	JDY18Driver_SetParity(huart, parity);
+	HAL_Delay(200);
+	JDY18Driver_SetStopBit(huart, stopBit);
+	HAL_Delay(200);
+
+	memset(uartBuffer, 0, sizeof(uartBuffer));
+}
+
 void JDY18Driver_SendData(UART_HandleTypeDef* huart, char *data) {
 	char package[MAX_SIZE_DATA + 4];
 	memset(package, 0, MAX_SIZE_DATA + 4);
@@ -53,5 +85,13 @@ void JDY18Driver_SetStopBit(UART_HandleTypeDef* huart, uint8_t stopBit) {
 	char data[MAX_SIZE_DATA];
 	memset(data, 0, MAX_SIZE_DATA);
 	sprintf(data, "%s%d", instruction, stopBit);
+	JDY18Driver_SendData(huart, data);
+}
+
+void JDY18Driver_InquireDevices(UART_HandleTypeDef* huart) {
+	char *instruction = atInstructions[MASTER_SCAN_SLAVE];
+	char data[MAX_SIZE_DATA];
+	memset(data, 0, MAX_SIZE_DATA);
+	sprintf(data, "%s", instruction);
 	JDY18Driver_SendData(huart, data);
 }
