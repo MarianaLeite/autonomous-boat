@@ -18,7 +18,7 @@
 #define SLAVE_BEACON_NAME_B2 "PSE2022_B2"
 #define SLAVE_BEACON_NAME_B3 "PSE2022_B3"
 
-#define MEASURED_POWER -69
+#define MEASURED_POWER -82
 
 #include "stm32f4xx.h"
 
