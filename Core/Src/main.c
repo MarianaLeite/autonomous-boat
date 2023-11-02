@@ -25,8 +25,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "math.h"
+
 #include "Drivers/l298n_driver.h"
 #include "Drivers/jdy18_driver.h"
+#include "Drivers/hmc5883l_driver.h"
+#include "Services/compass_service.h"
 #include "Services/location_service.h"
 /* USER CODE END Includes */
 
@@ -45,15 +49,20 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim5;
 
+UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart3_rx;
 
 /* USER CODE BEGIN PV */
-L298N_HandleTypeDef bridge_handler;
+HMC5883L_HandlerTypeDef compass_handler;
+HMC5883L_DataTypeDef compass_data;
+CompassCalibrationParamsTypeDef compass_calibration_params;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -62,10 +71,24 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_I2C1_Init(void);
+static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM5_Init(void);
 /* USER CODE BEGIN PFP */
-void L298N_Init(void);
+#ifdef __GNUC__
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif
+
+PUTCHAR_PROTOTYPE
+{
+  HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+  return ch;
+}
+
+void HMC5883L_Init();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -104,16 +127,33 @@ int main(void)
   MX_DMA_Init();
   MX_TIM3_Init();
   MX_TIM2_Init();
+  MX_I2C1_Init();
+  MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
   LocationService_Init(&huart3, &htim5);
+  HMC5883L_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+//  CompassService_HMC5883L_Calibrate(&compass_handler, &compass_calibration_params, 1000);
+  compass_calibration_params.x_offset = 24;
+  compass_calibration_params.y_offset = 14;
+  compass_calibration_params.x_scale = 1.0;
+  compass_calibration_params.y_scale = (float)138/135;
+
   while (1)
   {
+    HMC5883LDriver_Read(&compass_handler, &compass_data, 100);
+
+    float degress = CompassService_GetNormalizedDegressAngle(compass_data.x_axis, compass_data.y_axis, &compass_calibration_params);
+
+    printf("Angle: %d\n\r", (int)degress);
+
+    HAL_Delay(200);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -158,6 +198,40 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
 }
 
 /**
@@ -227,7 +301,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 2000-1;
+  htim3.Init.Period = 2000;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV4;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -306,6 +380,39 @@ static void MX_TIM5_Init(void)
   /* USER CODE BEGIN TIM5_Init 2 */
 
   /* USER CODE END TIM5_Init 2 */
+
+}
+
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
 
 }
 
@@ -395,16 +502,17 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void L298N_Init(void)
+void HMC5883L_Init(void)
 {
-  bridge_handler.htim = &htim3;
-  bridge_handler.channel = TIM_CHANNEL_2;
-  bridge_handler.IN1_GPIO = L298N_IN1_GPIO_Port;
-  bridge_handler.IN1_Pin = L298N_IN1_Pin;
-  bridge_handler.IN2_GPIO = L298N_IN2_GPIO_Port;
-  bridge_handler.IN2_Pin = L298N_IN2_Pin;
+  compass_handler.hi2c = &hi2c1;
+  compass_handler.samples_avg = HMC5883L_8_SAMPLES_AVG;
+  compass_handler.output_rate = HMC5883L_OUTPUT_RATE_75_HZ;
+  compass_handler.measurement_mode = HMC5883L_MEASUREMENT_MODE_NORMAL;
+  compass_handler.gain = HMC5883L_GAIN_4_7_GA;
+  compass_handler.i2c_speed = HMC5883L_I2C_NORMAL_SPEED;
+  compass_handler.operation_mode = HMC5883L_CONTINUOUS_MEASUREMENT_MODE;
 
-  L298NDriver_Init(&bridge_handler, 2000);
+  HMC5883LDriver_Init(&compass_handler, 100);
 }
 /* USER CODE END 4 */
 
