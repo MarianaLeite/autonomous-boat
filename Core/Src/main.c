@@ -47,6 +47,7 @@
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim5;
 
 UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart3_rx;
@@ -62,6 +63,7 @@ static void MX_DMA_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_TIM5_Init(void);
 /* USER CODE BEGIN PFP */
 void L298N_Init(void);
 /* USER CODE END PFP */
@@ -103,8 +105,9 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM2_Init();
   MX_USART3_UART_Init();
+  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
-  LocationService_Init(&huart3);
+  LocationService_Init(&huart3, &htim5);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -112,9 +115,6 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
-	  HAL_Delay(100);
-	  LocationService_Scan(&huart3);
 
     /* USER CODE BEGIN 3 */
   }
@@ -227,7 +227,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 2000;
+  htim3.Init.Period = 2000-1;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV4;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -261,6 +261,51 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 2 */
   HAL_TIM_MspPostInit(&htim3);
+
+}
+
+/**
+  * @brief TIM5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM5_Init(void)
+{
+
+  /* USER CODE BEGIN TIM5_Init 0 */
+
+  /* USER CODE END TIM5_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM5_Init 1 */
+
+  /* USER CODE END TIM5_Init 1 */
+  htim5.Instance = TIM5;
+  htim5.Init.Prescaler = 100-1;
+  htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim5.Init.Period = 8000-1;
+  htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV4;
+  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim5, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim5, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM5_Init 2 */
+
+  /* USER CODE END TIM5_Init 2 */
 
 }
 
@@ -361,19 +406,6 @@ void L298N_Init(void)
 
   L298NDriver_Init(&bridge_handler, 2000);
 }
-/*
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-  if (__HAL_UART_GET_FLAG(huart, UART_FLAG_IDLE))
-  {
-    __HAL_UART_CLEAR_IDLEFLAG(huart);
-    HAL_UART_DMAStop(huart);
-    // Include UART response handler here
-    memset(buffer, 0, 100);
-    HAL_UART_Receive_DMA(huart, buffer, sizeof(buffer));
-  }
-}
-*/
 /* USER CODE END 4 */
 
 /**

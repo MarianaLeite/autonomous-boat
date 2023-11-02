@@ -1,6 +1,7 @@
 /**
  * @file location_service.h
  * @author Pierre Victor
+ *         Mariana Leite
  * @brief Service to manage location.
  * @version 0.1
  * @date 2023-10-21
@@ -13,34 +14,21 @@
 #define __LOCATION_SERVICE_H
 
 #define MASTER_BLE_NAME "MASTERBOAT"
-#define MEASURED_POWER -69
 #define SLAVE_BEACON_NAME_B1 "PSE2022_B1"
 #define SLAVE_BEACON_NAME_B2 "PSE2022_B2"
 #define SLAVE_BEACON_NAME_B3 "PSE2022_B3"
-#define MAX_BEACONS 3
+
+#define MEASURED_POWER -69
 
 #include "stm32f4xx.h"
-#include "Drivers/jdy18_driver.h"
-#include <math.h>
-
-typedef struct {
-    float distance;
-	char *name;
-} Beacon_t;
 
 /**
- * @brief Initialize the location service.
+ * @brief Initialize location service.
  * 
- * @param huart UART_HandleTypeDef pointer to UART handler associated to the BLE module.
+ * @param huart UART_HandleTypeDef pointer to serial handler structure.
+ * @param htim TIM_HandleTypeDef pointer to timer handler structure.
  */
-void LocationService_Init(UART_HandleTypeDef* huart);
-
-/**
- * @brief Update the location.
- * 
- * @param huart UART_HandleTypeDef pointer to UART handler associated to the BLE module.
- */
-void LocationService_Update(UART_HandleTypeDef* huart);
+void LocationService_Init(UART_HandleTypeDef* huart, TIM_HandleTypeDef* htim);
 
 /**
  * @brief Calculate the distance between the beacon and the master.
@@ -51,11 +39,9 @@ void LocationService_Update(UART_HandleTypeDef* huart);
 float LocationService_CalculateDistance(int rssi);
 
 /**
- * @brief Scans and returns the mapped SLAVE_BEACON_NAME_B[1-3].
+ * @brief Calculates and updates the system location.
  * 
- * @param huart UART_HandleTypeDef pointer to UART handler associated to the BLE module.
- * @return Beacon_t* Array with name and distance.
  */
-Beacon_t* LocationService_Scan(UART_HandleTypeDef* huart);
+void LocationService_UpdateLocation();
 
 #endif /* __LOCATION_SERVICE_H */
