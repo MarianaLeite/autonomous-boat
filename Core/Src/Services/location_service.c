@@ -22,6 +22,14 @@ buffer_t b1Buffer;
 buffer_t b2Buffer;
 buffer_t b3Buffer;
 
+location_t slaveBeaconLocationB1 = { 7802933.062793205, 608396.7671230149 };
+location_t slaveBeaconLocationB2 = { 7802967.079134472, 608408.4941720127 };
+location_t slaveBeaconLocationB3 = { 7802950.8103007395, 608408.3942480235 };
+location_t masterLocation = { 0, 0 };
+
+float trilaterationCalcCPartial = 0;
+float trilaterationCalcFPartial = 0;
+
 void LocationService_Init(UART_HandleTypeDef *huart, TIM_HandleTypeDef* htim)
 {
 	bleHandler.huart = huart;
@@ -35,6 +43,8 @@ void LocationService_Init(UART_HandleTypeDef *huart, TIM_HandleTypeDef* htim)
 	JDY18Driver_InquireDevices(bleHandler.huart);
 
 	HAL_TIM_Base_Start_IT(htim);
+	trilaterationCalcCPartial = - pow(slaveBeaconLocationB1.longitude, 2) + pow(slaveBeaconLocationB2.longitude, 2) - pow(slaveBeaconLocationB1.latitude, 2) + pow(slaveBeaconLocationB2.latitude, 2);
+	trilaterationCalcFPartial = - pow(slaveBeaconLocationB2.longitude, 2) + pow(slaveBeaconLocationB3.longitude, 2) - pow(slaveBeaconLocationB2.latitude, 2) + pow(slaveBeaconLocationB3.latitude, 2);
 }
 
 float LocationService_CalculateDistance(int rssi)
@@ -45,7 +55,7 @@ float LocationService_CalculateDistance(int rssi)
 void LocationService_UpdateLocation()
 {
 	scan_t scannedDevices;
-	float b1Distance, b2Distance, b3Distance;
+	float b1Distance = -1, b2Distance = -1, b3Distance = -1;
 
 	JDY18Driver_GetScannedDevices(&scannedDevices);
 
@@ -53,16 +63,30 @@ void LocationService_UpdateLocation()
 		char* deviceName = scannedDevices.devices[i].name;
 		int rssi = scannedDevices.devices[i].rssi;
 
-		if(strstr(deviceName, SLAVE_BEACON_NAME_B1) == 0) {
+		if(strstr(deviceName, SLAVE_BEACON_NAME_B1) != NULL) {
 			b1Distance = DataFilterService_MovingAverage(&b1Buffer, LocationService_CalculateDistance(rssi));
-		} else if(strstr(deviceName, SLAVE_BEACON_NAME_B2) == 0) {
+		} else if(strstr(deviceName, SLAVE_BEACON_NAME_B2) != NULL) {
 			b2Distance = DataFilterService_MovingAverage(&b2Buffer, LocationService_CalculateDistance(rssi));
-		} else if(strstr(deviceName, SLAVE_BEACON_NAME_B3) == 0) {
+		} else if(strstr(deviceName, SLAVE_BEACON_NAME_B3) != NULL) {
 			b3Distance = DataFilterService_MovingAverage(&b3Buffer, LocationService_CalculateDistance(rssi));
 		}
 	}
 
-	// Calculates system location
+	if (b1Distance != -1 && b2Distance != -1 && b3Distance != -1) {
+		float trilaterationCalcA = -2*slaveBeaconLocationB1.longitude + 2*slaveBeaconLocationB2.longitude;
+		float trilaterationCalcB = -2*slaveBeaconLocationB1.latitude + 2*slaveBeaconLocationB2.latitude;
+		float trilaterationCalcC = pow(b1Distance, 2) - pow(b2Distance, 2) + trilaterationCalcCPartial;
+		float trilaterationCalcD = -2*slaveBeaconLocationB2.longitude + 2*slaveBeaconLocationB3.longitude;
+		float trilaterationCalcE = -2*slaveBeaconLocationB2.latitude + 2*slaveBeaconLocationB3.latitude;
+		float trilaterationCalcF = pow(b2Distance, 2) - pow(b3Distance, 2) + trilaterationCalcFPartial;
+
+		masterLocation.longitude = (trilaterationCalcC*trilaterationCalcE - trilaterationCalcF*trilaterationCalcB)/(trilaterationCalcE*trilaterationCalcA - trilaterationCalcB*trilaterationCalcD);
+		masterLocation.latitude= (trilaterationCalcC*trilaterationCalcD - trilaterationCalcA*trilaterationCalcF)/(trilaterationCalcB*trilaterationCalcD - trilaterationCalcA*trilaterationCalcE);
+	}
 
 	JDY18Driver_InquireDevices(bleHandler.huart);
+}
+
+location_t LocationService_GetLocation() {
+	return masterLocation;
 }

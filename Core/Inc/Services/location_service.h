@@ -3,6 +3,9 @@
  * @author Pierre Victor
  *         Mariana Leite
  * @brief Service to manage location.
+ * The location is calculated using UTM coordinates.
+ * Can you convert latitude and longitude to UTM using the following link:
+ * https://sigam.ambiente.sp.gov.br/sigam3/Controles/latlongutm.htm?latTxt=ctl00_con
  * @version 0.1
  * @date 2023-10-21
  * 
@@ -21,6 +24,11 @@
 #define MEASURED_POWER -82
 
 #include "stm32f4xx.h"
+
+typedef struct {
+	float latitude;
+	float longitude;
+} location_t;
 
 /**
  * @brief Initialize location service.
@@ -43,5 +51,12 @@ float LocationService_CalculateDistance(int rssi);
  * 
  */
 void LocationService_UpdateLocation();
+
+/**
+ * @brief Get the Location of the boat.
+ * 
+ * @return location_t with latitude and longitude in Universal Transversa de Mercator.
+ */
+location_t LocationService_GetLocation();
 
 #endif /* __LOCATION_SERVICE_H */
