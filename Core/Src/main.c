@@ -24,13 +24,6 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include "math.h"
-
-#include "Drivers/jdy18_driver.h"
-#include "Drivers/hmc5883l_driver.h"
-#include "Services/compass_service.h"
-#include "Services/location_service.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -60,9 +53,7 @@ UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart3_rx;
 
 /* USER CODE BEGIN PV */
-HMC5883L_HandlerTypeDef compass_handler;
-HMC5883L_DataTypeDef compass_data;
-CompassCalibrationParamsTypeDef compass_calibration_params;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -88,8 +79,6 @@ PUTCHAR_PROTOTYPE
   HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
   return ch;
 }
-
-void HMC5883L_Init();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -134,28 +123,14 @@ int main(void)
   MX_TIM5_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  LocationService_Init(&huart3, &htim5);
-  HMC5883L_Init();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-//  CompassService_HMC5883L_Calibrate(&compass_handler, &compass_calibration_params, 1000);
-  compass_calibration_params.x_offset = 24;
-  compass_calibration_params.y_offset = 14;
-  compass_calibration_params.x_scale = 1.0;
-  compass_calibration_params.y_scale = (float)138/135;
-
   while (1)
   {
-    HMC5883LDriver_Read(&compass_handler, &compass_data, 100);
-
-    float degress = CompassService_GetNormalizedDegressAngle(compass_data.x_axis, compass_data.y_axis, &compass_calibration_params);
-
-    printf("Angle: %d\n\r", (int)degress);
-
-    HAL_Delay(200);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -553,18 +528,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HMC5883L_Init(void)
-{
-  compass_handler.hi2c = &hi2c1;
-  compass_handler.samples_avg = HMC5883L_8_SAMPLES_AVG;
-  compass_handler.output_rate = HMC5883L_OUTPUT_RATE_75_HZ;
-  compass_handler.measurement_mode = HMC5883L_MEASUREMENT_MODE_NORMAL;
-  compass_handler.gain = HMC5883L_GAIN_4_7_GA;
-  compass_handler.i2c_speed = HMC5883L_I2C_NORMAL_SPEED;
-  compass_handler.operation_mode = HMC5883L_CONTINUOUS_MEASUREMENT_MODE;
 
-  HMC5883LDriver_Init(&compass_handler, 100);
-}
 /* USER CODE END 4 */
 
 /**
