@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "Services/location_service.h"
+#include "Services/compass_service.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -244,6 +245,7 @@ void TIM5_IRQHandler(void)
   HAL_TIM_IRQHandler(&htim5);
   /* USER CODE BEGIN TIM5_IRQn 1 */
   LocationService_UpdateLocation();
+  CompassService_UpdateCompassAngle();
   /* USER CODE END TIM5_IRQn 1 */
 }
 
