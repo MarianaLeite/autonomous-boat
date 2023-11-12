@@ -23,6 +23,8 @@ typedef struct {
 	size_t size;
 } buffer_t;
 
+void DataFilterService_InitBuffer(buffer_t* buffer);
+
 /**
  * @brief Calculates moving average from buffer
  * 
