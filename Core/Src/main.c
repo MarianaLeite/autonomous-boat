@@ -24,14 +24,6 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include "math.h"
-
-#include "Drivers/l298n_driver.h"
-#include "Drivers/jdy18_driver.h"
-#include "Drivers/hmc5883l_driver.h"
-#include "Services/compass_service.h"
-#include "Services/location_service.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -53,6 +45,7 @@ I2C_HandleTypeDef hi2c1;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim5;
 
 UART_HandleTypeDef huart2;
@@ -60,9 +53,7 @@ UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart3_rx;
 
 /* USER CODE BEGIN PV */
-HMC5883L_HandlerTypeDef compass_handler;
-HMC5883L_DataTypeDef compass_data;
-CompassCalibrationParamsTypeDef compass_calibration_params;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -75,6 +66,7 @@ static void MX_I2C1_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM5_Init(void);
+static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
 #ifdef __GNUC__
 #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
@@ -87,8 +79,6 @@ PUTCHAR_PROTOTYPE
   HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
   return ch;
 }
-
-void HMC5883L_Init();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -131,29 +121,16 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_TIM5_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  LocationService_Init(&huart3, &htim5);
-  HMC5883L_Init();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-//  CompassService_HMC5883L_Calibrate(&compass_handler, &compass_calibration_params, 1000);
-  compass_calibration_params.x_offset = 24;
-  compass_calibration_params.y_offset = 14;
-  compass_calibration_params.x_scale = 1.0;
-  compass_calibration_params.y_scale = (float)138/135;
-
   while (1)
   {
-    HMC5883LDriver_Read(&compass_handler, &compass_data, 100);
-
-    float degress = CompassService_GetNormalizedDegressAngle(compass_data.x_axis, compass_data.y_axis, &compass_calibration_params);
-
-    printf("Angle: %d\n\r", (int)degress);
-
-    HAL_Delay(200);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -339,6 +316,55 @@ static void MX_TIM3_Init(void)
 }
 
 /**
+  * @brief TIM4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM4_Init(void)
+{
+
+  /* USER CODE BEGIN TIM4_Init 0 */
+
+  /* USER CODE END TIM4_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM4_Init 1 */
+
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 160-1;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 2000-1;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
+
+  /* USER CODE END TIM4_Init 2 */
+  HAL_TIM_MspPostInit(&htim4);
+
+}
+
+/**
   * @brief TIM5 Initialization Function
   * @param None
   * @retval None
@@ -480,40 +506,29 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(L298N_IN1_GPIO_Port, L298N_IN1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, L293D_LATCH_Pin|L293D_EN_Pin|L293D_SER_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(L298N_IN2_GPIO_Port, L298N_IN2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(L293D_CLK_GPIO_Port, L293D_CLK_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : L298N_IN1_Pin */
-  GPIO_InitStruct.Pin = L298N_IN1_Pin;
+  /*Configure GPIO pins : L293D_LATCH_Pin L293D_EN_Pin L293D_SER_Pin */
+  GPIO_InitStruct.Pin = L293D_LATCH_Pin|L293D_EN_Pin|L293D_SER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(L298N_IN1_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : L298N_IN2_Pin */
-  GPIO_InitStruct.Pin = L298N_IN2_Pin;
+  /*Configure GPIO pin : L293D_CLK_Pin */
+  GPIO_InitStruct.Pin = L293D_CLK_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(L298N_IN2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(L293D_CLK_GPIO_Port, &GPIO_InitStruct);
 
 }
 
 /* USER CODE BEGIN 4 */
-void HMC5883L_Init(void)
-{
-  compass_handler.hi2c = &hi2c1;
-  compass_handler.samples_avg = HMC5883L_8_SAMPLES_AVG;
-  compass_handler.output_rate = HMC5883L_OUTPUT_RATE_75_HZ;
-  compass_handler.measurement_mode = HMC5883L_MEASUREMENT_MODE_NORMAL;
-  compass_handler.gain = HMC5883L_GAIN_4_7_GA;
-  compass_handler.i2c_speed = HMC5883L_I2C_NORMAL_SPEED;
-  compass_handler.operation_mode = HMC5883L_CONTINUOUS_MEASUREMENT_MODE;
 
-  HMC5883LDriver_Init(&compass_handler, 100);
-}
 /* USER CODE END 4 */
 
 /**
