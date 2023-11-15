@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <math.h>
 
-#include "Drivers/hmc5883l_driver.h"
+#include "stm32f4xx.h"
 
 #define MAGNETIC_DECLINATION 0.3508
 
@@ -32,38 +32,57 @@ typedef struct
 } CompassCalibrationParamsTypeDef;
 
 /**
+ * @brief Initializes compass service.
+ * 
+ * @param hi2c I2C_HandleTypeDef pointer to i2c peripheral used for magnetometer module communication.
+ * @param htim TIM_HandleTypeDef pointer to timer where the compass angle should be updated periodically.
+ */
+void CompassService_Init(I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim);
+
+/**
+ * @brief Calibrate magnetometer module over provided iterations.
+ *
+ * @param iterations Number of iterations (measures) used for calibration.
+ */
+void CompassService_Calibrate(int iterations);
+
+/**
  * @brief Clean and setup calibration params.
  * 
- * @param calibration_params CompassCalibrationParamsTypeDef pointer to stored calibration params.
+ * @param calibrationParams CompassCalibrationParamsTypeDef pointer to stored calibration params.
  */
-void CompassService_InitCalibrationParams(CompassCalibrationParamsTypeDef *calibration_params);
+void CompassService_InitCalibrationParams(CompassCalibrationParamsTypeDef *calibrationParams);
 
 /**
  * @brief Update calibration params with given axis measured values.
  * 
  * @param x_axis Measured value for X axis.
  * @param y_axis Measured value for Y axis.
- * @param calibration_params CompassCalibrationParamsTypeDef pointer to stored calibration params.
+ * @param calibrationParams CompassCalibrationParamsTypeDef pointer to stored calibration params.
  */
-void CompassService_Calibrate(int16_t x_axis, int16_t y_axis, CompassCalibrationParamsTypeDef *calibration_params);
+void CompassService_UpdateCalibrationParams(int16_t x_axis, int16_t y_axis, CompassCalibrationParamsTypeDef *calibrationParams);
 
 /**
  * @brief Calculate and return a normalized degress angle using X and Y axes.
  * 
  * @param x_axis Measured value for X axis.
  * @param y_axis Measured value for Y axis.
- * @param calibration_params CompassCalibrationParamsTypeDef pointer to stored calibration params.
- * @return float 
+ * @param calibrationParams CompassCalibrationParamsTypeDef pointer to stored calibration params.
+ * @return float Calculated angle.
  */
-float CompassService_GetNormalizedDegressAngle(int16_t x_axis, int16_t y_axis, CompassCalibrationParamsTypeDef *calibration_params);
+float CompassService_CalculateAngle(int16_t x_axis, int16_t y_axis, CompassCalibrationParamsTypeDef *calibrationParams);
 
 /**
- * @brief Calibrate HMC5883L over provided iterations.
+ * @brief Reads magnetometer values and calculates compass angle.
  * 
- * @param compass_handler HMC5883L_HandlerTypeDef pointer to module handler.
- * @param compass_calibration_params CompassCalibrationParamsTypeDef pointer to stored calibration params.
- * @param iterations Number of iterations (measures) used for calibration.
  */
-void CompassService_HMC5883L_Calibrate(HMC5883L_HandlerTypeDef *compass_handler, CompassCalibrationParamsTypeDef *compass_calibration_params, int iterations);
+void CompassService_UpdateCompassAngle();
+
+/**
+ * @brief Returns the current compass angle.
+ * 
+ * @return float Calculated angle.
+ */
+float CompassService_GetCompassAngle();
 
 #endif /* COMPASS_SERVICE_H_ */

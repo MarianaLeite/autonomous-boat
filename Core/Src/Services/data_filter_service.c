@@ -11,6 +11,12 @@
 
 #include "Services/data_filter_service.h"
 
+void DataFilterService_InitBuffer(buffer_t* buffer)
+{
+	buffer->size = 0;
+	buffer->sum = 0;
+}
+
 float DataFilterService_MovingAverage(buffer_t* buffer, float newValue)
 {
 	if(buffer->size < MAX_BUFFER_SIZE) {
