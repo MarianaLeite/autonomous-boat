@@ -24,6 +24,8 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <stdlib.h>
+//#include "Drivers/l293d_driver.h"
+#include "Services/control_service.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -123,7 +125,16 @@ int main(void)
   MX_TIM5_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
+  ControlParamsHandleTypeDef handlerControl;
+  handlerControl.huartLocation = &huart3;
+  handlerControl.htimLocation = &htim5;
+  handlerControl.hi2cCompass = &hi2c1;
+  handlerControl.htimCompass = &htim2;
+  handlerControl.htimServo = &htim4;
+  handlerControl.htimMotor = &htim3;
+  handlerControl.periodMotor = 2000;
 
+  ControlService_Init(&handlerControl);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -132,7 +143,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+    ControlService_Proportional(&handlerControl);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
