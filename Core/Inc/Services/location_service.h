@@ -20,6 +20,7 @@
 #define SLAVE_BEACON_NAME_B1 "PSE2022_B1"
 #define SLAVE_BEACON_NAME_B2 "PSE2022_B2"
 #define SLAVE_BEACON_NAME_B3 "PSE2022_B3"
+#define PRECISION_BLE_METERS 0.5
 
 #define MEASURED_POWER -82
 
@@ -58,5 +59,20 @@ void LocationService_UpdateLocation();
  * @return location_t with latitude and longitude in Universal Transversa de Mercator.
  */
 location_t LocationService_GetLocation();
+
+/**
+ * @brief Get the angle between the arrival and the boat.
+ * 
+ * @return float Calculated angle.
+ */
+float LocationService_GetArrivalAngle();
+
+/**
+ * @brief Inform if the boat is in the destiny.
+ * The precision is PRECISION_BLE_METERS, you can define in this file.
+ * 
+ * @return	true if the boat is in the destiny, false otherwise.
+ */
+uint8_t LocationService_IsInDestiny();
 
 #endif /* __LOCATION_SERVICE_H */
