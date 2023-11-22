@@ -2,7 +2,7 @@
 
 #include "Services/pwm_service.h"
 
-int lastDegrees = 0;
+int lastDegrees = 91;
 
 void SG90Driver_SetPosition(TIM_HandleTypeDef* htim, uint32_t channel, int8_t degrees) {
 	if (degrees > 90) degrees = 90;
