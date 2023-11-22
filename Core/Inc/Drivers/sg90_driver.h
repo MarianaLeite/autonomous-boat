@@ -17,7 +17,7 @@
 
 #include "stm32f4xx.h"
 
-#define SG90_DEGREES 5
+#define SG90_OFFSET_DEGREES 5
 
 /**
  * @brief Set the position of Micro Servo using degrees.
