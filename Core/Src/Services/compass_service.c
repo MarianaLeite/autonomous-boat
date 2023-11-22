@@ -33,10 +33,10 @@ void CompassService_Init(I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim)
 
 	HMC5883LDriver_Init(&magnetometerHandler, 100);
 
-	calibrationParams.x_offset = 24;
-	calibrationParams.y_offset = 14;
-	calibrationParams.x_scale = 1.0;
-	calibrationParams.y_scale = (float)138/135;
+	calibrationParams.x_offset = -43;
+	calibrationParams.y_offset = -24;
+	calibrationParams.x_scale = 1.06617641;
+	calibrationParams.y_scale = 1.0;
 
 	DataFilterService_InitBuffer(&xBuffer);
 	DataFilterService_InitBuffer(&yBuffer);
@@ -108,6 +108,7 @@ float CompassService_CalculateAngle(int16_t x_axis, int16_t y_axis, CompassCalib
 	float heading = atan2f(y_norm, x_norm);
 
 	heading += MAGNETIC_DECLINATION;
+	heading -= M_PI/2;
 
 	if (heading < 0)
 	{

@@ -13,8 +13,11 @@
 #define __SG90_DRIVER_H
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "stm32f4xx.h"
+
+#define SG90_OFFSET_DEGREES 5
 
 /**
  * @brief Set the position of Micro Servo using degrees.
@@ -23,6 +26,6 @@
  * @param channel Timer channel associated to the PWM.
  * @param degrees Position servo in degrees.
  */
-void SG90Driver_SetPosition(TIM_HandleTypeDef* htim, uint32_t channel, int8_t degrees);
+void SG90Driver_SetPosition(TIM_HandleTypeDef* htim, uint32_t channel, int16_t degrees);
 
 #endif /* __SG90_DRIVER_H */
