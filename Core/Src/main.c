@@ -24,7 +24,6 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <stdlib.h>
-//#include "Drivers/l293d_driver.h"
 #include "Services/control_service.h"
 /* USER CODE END Includes */
 
@@ -129,7 +128,7 @@ int main(void)
   handlerControl.huartLocation = &huart3;
   handlerControl.htimLocation = &htim5;
   handlerControl.hi2cCompass = &hi2c1;
-  handlerControl.htimCompass = &htim2;
+  handlerControl.htimCompass = &htim5;
   handlerControl.htimServo = &htim4;
   handlerControl.htimMotor = &htim3;
   handlerControl.periodMotor = 2000;
@@ -139,11 +138,10 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
   while (1)
   {
-    /* USER CODE END WHILE */
     ControlService_Proportional(&handlerControl);
+    /* USER CODE END WHILE */
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
