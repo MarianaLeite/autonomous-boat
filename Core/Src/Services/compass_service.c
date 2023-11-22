@@ -129,7 +129,7 @@ void CompassService_UpdateCompassAngle()
 	if(HMC5883LDriver_Read(&magnetometerHandler, &data, 100)) {
 		float x = DataFilterService_MovingAverage(&xBuffer, data.x_axis);
 		float y = DataFilterService_MovingAverage(&yBuffer, data.y_axis);
-		angle = CompassService_CalculateAngle(x, y, &calibrationParams);
+		angle = CompassService_CalculateAngle(y, x, &calibrationParams);
 	}
 }
 
