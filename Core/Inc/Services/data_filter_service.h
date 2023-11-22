@@ -21,6 +21,7 @@ typedef struct {
 	float data[MAX_BUFFER_SIZE];
 	float sum;
 	size_t size;
+	size_t position;
 } buffer_t;
 
 void DataFilterService_InitBuffer(buffer_t* buffer);

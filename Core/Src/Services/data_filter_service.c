@@ -15,25 +15,12 @@ void DataFilterService_InitBuffer(buffer_t* buffer)
 {
 	buffer->size = 0;
 	buffer->sum = 0;
+	buffer->position = 0;
 }
 
-float DataFilterService_MovingAverage(buffer_t* buffer, float newValue)
-{
-	if(buffer->size < MAX_BUFFER_SIZE) {
-		buffer->data[buffer->size] = newValue;
-		buffer->size++;
-		buffer->sum += newValue;
-	} else {
-		float temp[MAX_BUFFER_SIZE - 1];
-
-		buffer->sum -= buffer->data[0];
-
-		memcpy(temp, buffer->data + 1, MAX_BUFFER_SIZE - 1);
-		memcpy(buffer->data, temp, MAX_BUFFER_SIZE - 1);
-
-		buffer->data[MAX_BUFFER_SIZE - 1] = newValue;
-		buffer->sum += newValue;
-	}
-
-	return buffer->sum/buffer->size;
+float DataFilterService_MovingAverage(buffer_t* buffer, float newValue) {
+  buffer->sum += newValue - buffer->data[buffer->position];
+  buffer->data[buffer->position] = newValue;
+  buffer->position = (buffer->position + 1) % MAX_BUFFER_SIZE;
+  return (float)buffer->sum / MAX_BUFFER_SIZE;
 }
