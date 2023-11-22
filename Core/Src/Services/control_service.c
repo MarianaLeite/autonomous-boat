@@ -38,8 +38,9 @@ void ControlService_Init(ControlParamsHandleTypeDef* handler)
 	L293DDriver_SetSpeed(&handlerMotor, 1.0);
 	HAL_Delay(10000);
 	L293DDriver_SendControl(&handlerMotor, M1_FORWARD);
-	HAL_Delay(10000);
+	HAL_Delay(1000);
 	L293DDriver_SendControl(&handlerMotor, M1_STOP);
+	HAL_Delay(10000);
 }
 
 void ControlService_Proportional(ControlParamsHandleTypeDef* handler)
@@ -54,7 +55,7 @@ void ControlService_Proportional(ControlParamsHandleTypeDef* handler)
 	} else {
 		float rudderDegrees = (CompassService_GetCompassAngle() - LocationService_GetArrivalAngle()) * K_P;
 
-		SG90Driver_SetPosition(handler->htimServo, handler->channelServo, (int8_t) rudderDegrees);
+		SG90Driver_SetPosition(handler->htimServo, handler->channelServo, (int16_t) rudderDegrees);
 		if (!isMoving) {
 			isMoving = !isMoving;
 			L293DDriver_SendControl(&handlerMotor, M1_FORWARD);

@@ -4,7 +4,7 @@
 
 int lastDegrees = 91;
 
-void SG90Driver_SetPosition(TIM_HandleTypeDef* htim, uint32_t channel, int8_t degrees) {
+void SG90Driver_SetPosition(TIM_HandleTypeDef* htim, uint32_t channel, int16_t degrees) {
 	if (degrees > 90) degrees = 90;
 	if (degrees < -90) degrees = -90;
 
