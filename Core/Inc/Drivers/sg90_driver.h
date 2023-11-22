@@ -13,8 +13,11 @@
 #define __SG90_DRIVER_H
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "stm32f4xx.h"
+
+#define SG90_DEGREES 5
 
 /**
  * @brief Set the position of Micro Servo using degrees.
