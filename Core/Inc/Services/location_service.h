@@ -24,6 +24,7 @@
 
 #define MEASURED_POWER -82
 
+#include "stdbool.h"
 #include "stm32f4xx.h"
 
 typedef struct {
@@ -35,9 +36,8 @@ typedef struct {
  * @brief Initialize location service.
  * 
  * @param huart UART_HandleTypeDef pointer to serial handler structure.
- * @param htim TIM_HandleTypeDef pointer to timer handler structure.
  */
-void LocationService_Init(UART_HandleTypeDef* huart, TIM_HandleTypeDef* htim);
+void LocationService_Init(UART_HandleTypeDef* huart);
 
 /**
  * @brief Calculate the distance between the beacon and the master.
@@ -73,6 +73,6 @@ float LocationService_GetArrivalAngle();
  * 
  * @return	true if the boat is in the destiny, false otherwise.
  */
-uint8_t LocationService_IsInDestiny();
+bool LocationService_IsInDestiny();
 
 #endif /* __LOCATION_SERVICE_H */

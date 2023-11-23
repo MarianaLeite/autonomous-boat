@@ -37,7 +37,7 @@ typedef struct
  * @param hi2c I2C_HandleTypeDef pointer to i2c peripheral used for magnetometer module communication.
  * @param htim TIM_HandleTypeDef pointer to timer where the compass angle should be updated periodically.
  */
-void CompassService_Init(I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim);
+void CompassService_Init(I2C_HandleTypeDef* hi2c);
 
 /**
  * @brief Calibrate magnetometer module over provided iterations.

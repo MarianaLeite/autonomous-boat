@@ -25,12 +25,19 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <stdlib.h>
+#include "Services/location_service.h"
+#include "Services/compass_service.h"
 #include "Services/control_service.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+typedef struct {
+	location_t masterLocation;
+	float compassAngle;
+  float arrivalAngle;
+  bool isInDestiny;
+} boat_properties_t;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -55,8 +62,12 @@ UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart3_rx;
 
 osThreadId defaultTaskHandle;
+osThreadId locationTaskHandle;
+osThreadId compassTaskHandle;
+osThreadId controlTaskHandle;
 /* USER CODE BEGIN PV */
-
+osPoolDef (object_pool, 10, boat_properties_t);  // Declare memory pool
+osPoolId  (object_pool_id); // Memory pool ID
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -71,6 +82,9 @@ static void MX_USART3_UART_Init(void);
 static void MX_TIM5_Init(void);
 static void MX_TIM4_Init(void);
 void StartDefaultTask(void const * argument);
+void StartLocationTask(void const * argument);
+void StartCompassTask(void const * argument);
+void StartControlTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 #ifdef __GNUC__
@@ -128,16 +142,7 @@ int main(void)
   MX_TIM5_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  ControlParamsHandleTypeDef handlerControl;
-  handlerControl.huartLocation = &huart3;
-  handlerControl.htimLocation = &htim5;
-  handlerControl.hi2cCompass = &hi2c1;
-  handlerControl.htimCompass = &htim5;
-  handlerControl.htimServo = &htim4;
-  handlerControl.htimMotor = &htim3;
-  handlerControl.periodMotor = 2000;
 
-  ControlService_Init(&handlerControl);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -154,12 +159,25 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
+  object_pool_id = osPoolCreate(osPool(object_pool));
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+
+  /* definition and creation of locationTask */
+  osThreadDef(locationTask, StartLocationTask, osPriorityNormal, 0, 2048);
+  locationTaskHandle = osThreadCreate(osThread(locationTask), NULL);
+
+  /* definition and creation of compassTask */
+  osThreadDef(compassTask, StartCompassTask, osPriorityNormal, 0, 128);
+  compassTaskHandle = osThreadCreate(osThread(compassTask), NULL);
+
+  /* definition and creation of controlTask */
+  osThreadDef(controlTask, StartControlTask, osPriorityNormal, 0, 128);
+  controlTaskHandle = osThreadCreate(osThread(controlTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -173,7 +191,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    ControlService_Proportional(&handlerControl);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -590,6 +607,88 @@ void StartDefaultTask(void const * argument)
     osDelay(1);
   }
   /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_StartLocationTask */
+/**
+* @brief Function implementing the locationTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartLocationTask */
+void StartLocationTask(void const * argument)
+{
+  /* USER CODE BEGIN StartLocationTask */
+  LocationService_Init(&huart3);
+  
+  boat_properties_t *object_data;
+
+  object_pool_id = osPoolCreate(osPool(object_pool));
+  object_data = (boat_properties_t *) osPoolAlloc(object_pool_id);
+  /* Infinite loop */
+  for(;;)
+  {
+    LocationService_UpdateLocation();
+    object_data->masterLocation = LocationService_GetLocation();
+    object_data->arrivalAngle = LocationService_GetArrivalAngle();
+    object_data->isInDestiny = LocationService_IsInDestiny();
+    osDelay(100);
+  }
+  /* USER CODE END StartLocationTask */
+}
+
+/* USER CODE BEGIN Header_StartCompassTask */
+/**
+* @brief Function implementing the compassTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartCompassTask */
+void StartCompassTask(void const * argument)
+{
+  /* USER CODE BEGIN StartCompassTask */
+  CompassService_Init(&hi2c1);
+  boat_properties_t *object_data;
+
+  object_pool_id = osPoolCreate(osPool(object_pool));
+  object_data = (boat_properties_t *) osPoolAlloc(object_pool_id);
+  /* Infinite loop */
+  for(;;)
+  {
+    CompassService_UpdateCompassAngle();
+    object_data->compassAngle = CompassService_GetCompassAngle();
+    osDelay(50);
+  }
+  /* USER CODE END StartCompassTask */
+}
+
+/* USER CODE BEGIN Header_StartControlTask */
+/**
+* @brief Function implementing the controlTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartControlTask */
+void StartControlTask(void const * argument)
+{
+  /* USER CODE BEGIN StartControlTask */
+  ControlParamsHandleTypeDef handlerControl;
+  handlerControl.htimServo = &htim4;
+  handlerControl.htimMotor = &htim3;
+  handlerControl.periodMotor = 2000;
+
+  ControlService_Init(&handlerControl);
+  boat_properties_t *object_data;
+
+  object_pool_id = osPoolCreate(osPool(object_pool));
+  object_data = (boat_properties_t *) osPoolAlloc(object_pool_id);
+  /* Infinite loop */
+  for(;;)
+  {
+    ControlService_Proportional(&handlerControl, object_data->masterLocation.latitude, object_data->compassAngle, object_data->arrivalAngle, object_data->isInDestiny);
+    osDelay(1);
+  }
+  /* USER CODE END StartControlTask */
 }
 
 /**

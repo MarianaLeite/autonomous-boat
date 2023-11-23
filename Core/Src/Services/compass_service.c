@@ -21,7 +21,7 @@ buffer_t yBuffer;
 
 float angle;
 
-void CompassService_Init(I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim)
+void CompassService_Init(I2C_HandleTypeDef* hi2c)
 {
 	magnetometerHandler.hi2c = hi2c;
 	magnetometerHandler.samples_avg = HMC5883L_8_SAMPLES_AVG;
@@ -40,8 +40,6 @@ void CompassService_Init(I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim)
 
 	DataFilterService_InitBuffer(&xBuffer);
 	DataFilterService_InitBuffer(&yBuffer);
-
-	HAL_TIM_Base_Start_IT(htim);
 }
 
 void CompassService_Calibrate(int iterations)

@@ -36,7 +36,7 @@ location_t masterLocation = { 0, 0 };
 float trilaterationCalcCPartial = 0;
 float trilaterationCalcFPartial = 0;
 
-void LocationService_Init(UART_HandleTypeDef *huart, TIM_HandleTypeDef* htim)
+void LocationService_Init(UART_HandleTypeDef *huart)
 {
 	bleHandler.huart = huart;
 	bleHandler.name = MASTER_BLE_NAME;
@@ -54,8 +54,6 @@ void LocationService_Init(UART_HandleTypeDef *huart, TIM_HandleTypeDef* htim)
 	trilaterationCalcFPartial = - pow(slaveBeaconLocationB2.longitude, 2) + pow(slaveBeaconLocationB3.longitude, 2) - pow(slaveBeaconLocationB2.latitude, 2) + pow(slaveBeaconLocationB3.latitude, 2);
 
 	JDY18Driver_InquireDevices(bleHandler.huart);
-
-	HAL_TIM_Base_Start_IT(htim);
 }
 
 float LocationService_CalculateDistance(int rssi)
@@ -108,7 +106,7 @@ float LocationService_GetArrivalAngle()
 	return atan((masterLocation.longitude - slaveBeaconLocationB2.longitude) / (masterLocation.latitude - slaveBeaconLocationB2.latitude)) * 180 / 3.14159265359 + 180;
 }
 
-uint8_t LocationService_IsInDestiny()
+bool LocationService_IsInDestiny()
 {
-	return ((masterLocation.longitude - slaveBeaconLocationB2.longitude) < PRECISION_BLE_METERS) && ((masterLocation.latitude - slaveBeaconLocationB2.latitude) < PRECISION_BLE_METERS) ? 1 : 0;
+	return (abs(masterLocation.longitude - slaveBeaconLocationB2.longitude) < PRECISION_BLE_METERS) && (abs(masterLocation.latitude - slaveBeaconLocationB2.latitude) < PRECISION_BLE_METERS) ? true : false;
 }

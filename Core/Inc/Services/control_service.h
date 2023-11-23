@@ -15,17 +15,12 @@
 #include "stm32f4xx.h"
 #include "Drivers/l293d_driver.h"
 #include "Drivers/sg90_driver.h"
-#include "Services/location_service.h"
-#include "Services/compass_service.h"
+#include "stdbool.h"
 
 #define K_P 1.0
 
 typedef struct
 {
-	UART_HandleTypeDef* huartLocation;
-	TIM_HandleTypeDef* htimLocation;
-	I2C_HandleTypeDef* hi2cCompass;
-	TIM_HandleTypeDef* htimCompass;
 	TIM_HandleTypeDef* htimServo;
 	uint32_t channelServo;
 	TIM_HandleTypeDef* htimMotor;
@@ -34,7 +29,7 @@ typedef struct
 
 /**
  * @brief Initialize the control service.
- * Initialize the sensors and the actuators.
+ * Initialize the actuators.
  * Must set the servo to 0° and wait 10s. After, navigate in a straight line for 10s.
  * 
  * @param handler 
@@ -46,6 +41,6 @@ void ControlService_Init(ControlParamsHandleTypeDef* handler);
  * @brief Control the boat with the proportional method.
  * 
  */
-void ControlService_Proportional(ControlParamsHandleTypeDef* handler);
+void ControlService_Proportional(ControlParamsHandleTypeDef* handler, float masterLocationLatitude, float compassAngle, float arrivalAngle, bool isInDestiny);
 
 #endif /* __CONTROL_SERVICE_H */
