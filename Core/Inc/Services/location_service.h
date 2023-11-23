@@ -16,15 +16,17 @@
 #ifndef __LOCATION_SERVICE_H
 #define __LOCATION_SERVICE_H
 
+#include "stm32f4xx.h"
+#include "Drivers/jdy18_driver.h"
+
 #define MASTER_BLE_NAME "MASTERBOAT"
 #define SLAVE_BEACON_NAME_B1 "PSE2022_B1"
 #define SLAVE_BEACON_NAME_B2 "PSE2022_B2"
 #define SLAVE_BEACON_NAME_B3 "PSE2022_B3"
+#define CALIB_BEACON_NAME "CALIB_BEACON_NAME"
 #define PRECISION_BLE_METERS 0.5
 
 #define MEASURED_POWER -82
-
-#include "stm32f4xx.h"
 
 typedef struct {
 	float latitude;
@@ -46,6 +48,27 @@ void LocationService_Init(UART_HandleTypeDef* huart, TIM_HandleTypeDef* htim);
  * @return float Distance between the beacon and the master.
  */
 float LocationService_CalculateDistance(int rssi);
+
+/**
+ * @brief Calibrate localization service by measuring signal power at 1m
+ * 
+ * @return int Measured signal power
+ */
+int LocationService_Calibrate();
+
+/**
+ * @brief Updates measured signal power for calibration purpose
+ * 
+ * @param scannedDevices Devices currently scanned
+ */
+void LocationService_UpdateCalibration(scan_t* scannedDevices);
+
+/**
+ * @brief Calculates master location based on beacons distances
+ * 
+ * @param scannedDevices Devices currently scanned
+ */
+void LocationService_UpdateMasterLocation(scan_t* scannedDevices);
 
 /**
  * @brief Calculates and updates the system location.

@@ -11,16 +11,20 @@
  */
 
 #include "Services/location_service.h"
-#include "Drivers/jdy18_driver.h"
 #include "Services/data_filter_service.h"
 
 #include <math.h>
+#include <stdbool.h>
 
 JDY18_HandleTypeDef bleHandler;
 
 buffer_t b1Buffer;
 buffer_t b2Buffer;
 buffer_t b3Buffer;
+
+buffer_t calibBuffer;
+int calibValue;
+bool calibMode;
 
 /*
 (lat, long)
@@ -63,16 +67,34 @@ float LocationService_CalculateDistance(int rssi)
 	return pow(10, ((MEASURED_POWER - rssi) / 20));
 }
 
-void LocationService_UpdateLocation()
+int LocationService_Calibrate()
 {
-	scan_t scannedDevices;
+	DataFilterService_InitBuffer(&calibBuffer);
+	calibMode = true;
+	HAL_Delay(10000);
+	calibMode = false;
+	return calibValue;
+}
+
+void LocationService_UpdateCalibration(scan_t* scannedDevices)
+{
+	for(size_t i = 0; i < scannedDevices->size; i++) {
+		char* deviceName = scannedDevices->devices[i].name;
+
+		if(strstr(deviceName, CALIB_BEACON_NAME) != NULL) {
+			int rssi = scannedDevices->devices[i].rssi;
+			calibValue = DataFilterService_MovingAverage(&calibBuffer, rssi);
+		}
+	}
+}
+
+void LocationService_CalculateMasterLocation(scan_t* scannedDevices)
+{
 	float b1Distance = -1, b2Distance = -1, b3Distance = -1;
 
-	JDY18Driver_GetScannedDevices(&scannedDevices);
-
-	for(size_t i = 0; i < scannedDevices.size; i++) {
-		char* deviceName = scannedDevices.devices[i].name;
-		int rssi = scannedDevices.devices[i].rssi;
+	for(size_t i = 0; i < scannedDevices->size; i++) {
+		char* deviceName = scannedDevices->devices[i].name;
+		int rssi = scannedDevices->devices[i].rssi;
 
 		if(strstr(deviceName, SLAVE_BEACON_NAME_B1) != NULL) {
 			b1Distance = DataFilterService_MovingAverage(&b1Buffer, LocationService_CalculateDistance(rssi));
@@ -93,6 +115,19 @@ void LocationService_UpdateLocation()
 
 		masterLocation.longitude = (trilaterationCalcC*trilaterationCalcE - trilaterationCalcF*trilaterationCalcB)/(trilaterationCalcE*trilaterationCalcA - trilaterationCalcB*trilaterationCalcD);
 		masterLocation.latitude= (trilaterationCalcC*trilaterationCalcD - trilaterationCalcA*trilaterationCalcF)/(trilaterationCalcB*trilaterationCalcD - trilaterationCalcA*trilaterationCalcE);
+	}
+}
+
+void LocationService_UpdateLocation()
+{
+	scan_t scannedDevices;
+
+	JDY18Driver_GetScannedDevices(&scannedDevices);
+
+	if(calibMode) {
+		LocationService_UpdateCalibration(&scannedDevices);
+	} else {
+		LocationService_CalculateMasterLocation(&scannedDevices);
 	}
 
 	JDY18Driver_InquireDevices(bleHandler.huart);
