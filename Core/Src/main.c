@@ -66,8 +66,9 @@ osThreadId locationTaskHandle;
 osThreadId compassTaskHandle;
 osThreadId controlTaskHandle;
 /* USER CODE BEGIN PV */
-osPoolDef (object_pool, 10, boat_properties_t);  // Declare memory pool
-osPoolId  (object_pool_id); // Memory pool ID
+osPoolDef(object_pool, 1, boat_properties_t);  // Declare memory pool
+osPoolId (object_pool_id); // Memory pool ID
+boat_properties_t *object_data;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -160,6 +161,7 @@ int main(void)
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   object_pool_id = osPoolCreate(osPool(object_pool));
+  object_data = (boat_properties_t *) osPoolAlloc(object_pool_id);
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -620,11 +622,7 @@ void StartLocationTask(void const * argument)
 {
   /* USER CODE BEGIN StartLocationTask */
   LocationService_Init(&huart3);
-  
-  boat_properties_t *object_data;
 
-  object_pool_id = osPoolCreate(osPool(object_pool));
-  object_data = (boat_properties_t *) osPoolAlloc(object_pool_id);
   /* Infinite loop */
   for(;;)
   {
@@ -648,10 +646,7 @@ void StartCompassTask(void const * argument)
 {
   /* USER CODE BEGIN StartCompassTask */
   CompassService_Init(&hi2c1);
-  boat_properties_t *object_data;
 
-  object_pool_id = osPoolCreate(osPool(object_pool));
-  object_data = (boat_properties_t *) osPoolAlloc(object_pool_id);
   /* Infinite loop */
   for(;;)
   {
@@ -678,10 +673,7 @@ void StartControlTask(void const * argument)
   handlerControl.periodMotor = 2000;
 
   ControlService_Init(&handlerControl);
-  boat_properties_t *object_data;
 
-  object_pool_id = osPoolCreate(osPool(object_pool));
-  object_data = (boat_properties_t *) osPoolAlloc(object_pool_id);
   /* Infinite loop */
   for(;;)
   {
