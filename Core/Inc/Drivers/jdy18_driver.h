@@ -147,9 +147,10 @@ void JDY18Driver_InquireDevices(UART_HandleTypeDef* huart);
 /**
  * @brief Return the latest scanned devices.
  * 
- * @param scan scan_t pointer to structure where devices information are located.
+ * @param handler pointer to module handler.
+ * @return scan_t Structure where devices information are located.
  */
-void JDY18Driver_GetScannedDevices(scan_t* scan);
+scan_t JDY18Driver_GetScannedDevices(JDY18_HandleTypeDef* handler);
 
 /**
  * @brief Populate device with information available in string.
@@ -169,10 +170,11 @@ void JDY18Driver_LoadDeviceInfo(char* start, char* end, device_t* device);
 void JDY18Driver_ParseScanResponse(char* scanResponse, scan_t* scan);
 
 /**
- * @brief Rx Transfer completed callbacks.
- *
+ * @brief Scan devices in blocking mode.
+ * 
  * @param huart UART_HandleTypeDef pointer to UART handler associated to the Bluetooth module.
+ * @param scan pointer to structure that should be populated.
  */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
+void JDY18Driver_ScanInBlockingMode(UART_HandleTypeDef* huart, scan_t* scan);
 
 #endif /* __JDY18_DRIVER_H */

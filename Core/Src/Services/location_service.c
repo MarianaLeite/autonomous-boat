@@ -53,8 +53,6 @@ void LocationService_Init(UART_HandleTypeDef *huart, TIM_HandleTypeDef* htim)
 	trilaterationCalcCPartial = - pow(slaveBeaconLocationB1.longitude, 2) + pow(slaveBeaconLocationB2.longitude, 2) - pow(slaveBeaconLocationB1.latitude, 2) + pow(slaveBeaconLocationB2.latitude, 2);
 	trilaterationCalcFPartial = - pow(slaveBeaconLocationB2.longitude, 2) + pow(slaveBeaconLocationB3.longitude, 2) - pow(slaveBeaconLocationB2.latitude, 2) + pow(slaveBeaconLocationB3.latitude, 2);
 
-	JDY18Driver_InquireDevices(bleHandler.huart);
-
 	HAL_TIM_Base_Start_IT(htim);
 }
 
@@ -65,10 +63,8 @@ float LocationService_CalculateDistance(int rssi)
 
 void LocationService_UpdateLocation()
 {
-	scan_t scannedDevices;
 	float b1Distance = -1, b2Distance = -1, b3Distance = -1;
-
-	JDY18Driver_GetScannedDevices(&scannedDevices);
+	scan_t scannedDevices = JDY18Driver_GetScannedDevices(&bleHandler);
 
 	for(size_t i = 0; i < scannedDevices.size; i++) {
 		char* deviceName = scannedDevices.devices[i].name;
@@ -94,8 +90,6 @@ void LocationService_UpdateLocation()
 		masterLocation.longitude = (trilaterationCalcC*trilaterationCalcE - trilaterationCalcF*trilaterationCalcB)/(trilaterationCalcE*trilaterationCalcA - trilaterationCalcB*trilaterationCalcD);
 		masterLocation.latitude= (trilaterationCalcC*trilaterationCalcD - trilaterationCalcA*trilaterationCalcF)/(trilaterationCalcB*trilaterationCalcD - trilaterationCalcA*trilaterationCalcE);
 	}
-
-	JDY18Driver_InquireDevices(bleHandler.huart);
 }
 
 location_t LocationService_GetLocation()
