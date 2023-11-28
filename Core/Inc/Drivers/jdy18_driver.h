@@ -148,9 +148,9 @@ void JDY18Driver_InquireDevices(UART_HandleTypeDef* huart);
  * @brief Return the latest scanned devices.
  * 
  * @param handler pointer to module handler.
- * @return scan_t Structure where devices information are located.
+ * @param scan structure where devices information are located.
  */
-scan_t JDY18Driver_GetScannedDevices(JDY18_HandleTypeDef* handler);
+void JDY18Driver_GetScannedDevices(JDY18_HandleTypeDef* handler, scan_t* scan);
 
 /**
  * @brief Populate device with information available in string.

@@ -130,15 +130,17 @@ int main(void)
   handlerControl.htimMotor = &htim3;
   handlerControl.periodMotor = 2000;
 
-  ControlService_Init(&handlerControl);
+  //ControlService_Init(&handlerControl);
+  LocationService_Init(&huart3, &htim5);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    ControlService_Proportional(&handlerControl);
-
+    //ControlService_Proportional(&handlerControl);
+	int calibrationValue = LocationService_Calibrate("PSE2022_B3");
+	printf("Measured power: %d", calibrationValue);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

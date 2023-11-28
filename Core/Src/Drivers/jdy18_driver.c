@@ -94,12 +94,10 @@ void JDY18Driver_InquireDevices(UART_HandleTypeDef* huart)
 	JDY18Driver_SendData(huart, data);
 }
 
-scan_t JDY18Driver_GetScannedDevices(JDY18_HandleTypeDef* handler)
+void JDY18Driver_GetScannedDevices(JDY18_HandleTypeDef* handler, scan_t* scan)
 {
-	scan_t scan;
 	JDY18Driver_InquireDevices(handler->huart);
-	JDY18Driver_ScanInBlockingMode(handler->huart, &scan);
-	return scan;
+	JDY18Driver_ScanInBlockingMode(handler->huart, scan);
 }
 
 void JDY18Driver_LoadDeviceInfo(char* start, char* end, device_t* device)
