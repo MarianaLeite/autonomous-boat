@@ -126,9 +126,13 @@ void JDY18Driver_ParseScanResponse(char* scanResponse, scan_t* scan)
 
 	if((start = strstr(scanResponse, INIT_MODULE_RESPONSE_SCAN))) {
 		while((end = strstr(start + 1, INIT_MODULE_RESPONSE_SCAN))) {
-			JDY18Driver_LoadDeviceInfo(start, end, &scan->devices[scan->size]);
-			start = end;
-			scan->size++;
+			if(scan->size < MAX_DEVICE_LIST) {
+				JDY18Driver_LoadDeviceInfo(start, end, &scan->devices[scan->size]);
+				start = end;
+				scan->size++;
+			} else {
+				return;
+			}
 		}
 		if((end = strstr(start + 1, END_RESPONSE_SCAN))) {
 			JDY18Driver_LoadDeviceInfo(start, end, &scan->devices[scan->size]);
