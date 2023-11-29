@@ -75,4 +75,6 @@ float LocationService_GetArrivalAngle();
  */
 uint8_t LocationService_IsInDestiny();
 
+int LocationService_Calibrate(char* calibDeviceName);
+
 #endif /* __LOCATION_SERVICE_H */

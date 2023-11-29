@@ -23,8 +23,6 @@ char *atInstructions[] = {
 
 uint8_t uartBuffer[MAX_SIZE_UART_BUFFER];
 
-scan_t gScan;
-
 void JDY18Driver_Init(JDY18_HandleTypeDef* handler)
 {
 	JDY18Driver_SetName(handler->huart, handler->name);
@@ -32,14 +30,6 @@ void JDY18Driver_Init(JDY18_HandleTypeDef* handler)
 	JDY18Driver_SetBaudRate(handler->huart, handler->baudRate);
 	JDY18Driver_SetParity(handler->huart, handler->parity);
 	JDY18Driver_SetStopBit(handler->huart, handler->stopBit);
-
-	HAL_Delay(200);
-
-	gScan.size = 0;
-	memset(uartBuffer, 0, sizeof(uartBuffer));
-
-	__HAL_UART_ENABLE_IT(handler->huart, UART_IT_IDLE);
-	HAL_UART_Receive_DMA(handler->huart, uartBuffer, sizeof(uartBuffer));
 }
 
 void JDY18Driver_SendData(UART_HandleTypeDef* huart, char *data)
@@ -104,9 +94,10 @@ void JDY18Driver_InquireDevices(UART_HandleTypeDef* huart)
 	JDY18Driver_SendData(huart, data);
 }
 
-void JDY18Driver_GetScannedDevices(scan_t* scan)
+void JDY18Driver_GetScannedDevices(JDY18_HandleTypeDef* handler, scan_t* scan)
 {
-	*scan = gScan;
+	JDY18Driver_InquireDevices(handler->huart);
+	JDY18Driver_ScanInBlockingMode(handler->huart, scan);
 }
 
 void JDY18Driver_LoadDeviceInfo(char* start, char* end, device_t* device)
@@ -135,9 +126,13 @@ void JDY18Driver_ParseScanResponse(char* scanResponse, scan_t* scan)
 
 	if((start = strstr(scanResponse, INIT_MODULE_RESPONSE_SCAN))) {
 		while((end = strstr(start + 1, INIT_MODULE_RESPONSE_SCAN))) {
-			JDY18Driver_LoadDeviceInfo(start, end, &scan->devices[scan->size]);
-			start = end;
-			scan->size++;
+			if(scan->size < MAX_DEVICE_LIST) {
+				JDY18Driver_LoadDeviceInfo(start, end, &scan->devices[scan->size]);
+				start = end;
+				scan->size++;
+			} else {
+				return;
+			}
 		}
 		if((end = strstr(start + 1, END_RESPONSE_SCAN))) {
 			JDY18Driver_LoadDeviceInfo(start, end, &scan->devices[scan->size]);
@@ -146,19 +141,20 @@ void JDY18Driver_ParseScanResponse(char* scanResponse, scan_t* scan)
 	}
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+void JDY18Driver_ScanInBlockingMode(UART_HandleTypeDef* huart, scan_t* scan)
 {
-	if (__HAL_UART_GET_FLAG(huart, UART_FLAG_IDLE))
-	{
-		__HAL_UART_CLEAR_IDLEFLAG(huart);
+	memset(uartBuffer, 0, sizeof(uartBuffer));
+	uint8_t byte;
+	size_t pos = 0;
 
-		if(strstr((char*)uartBuffer, END_RESPONSE_SCAN)) {
-			HAL_UART_DMAStop(huart);
-
-			JDY18Driver_ParseScanResponse((char*)uartBuffer, &gScan);
-
-			memset(uartBuffer, 0, sizeof(uartBuffer));
-			HAL_UART_Receive_DMA(huart, uartBuffer, sizeof(uartBuffer));
+	while(strstr((char*)uartBuffer, END_RESPONSE_SCAN) == NULL) {
+		if(HAL_UART_Receive(huart, &byte, 1, 50) == HAL_OK) {
+			uartBuffer[pos] = byte;
+			pos += 1;
+		} else {
+			break;
 		}
 	}
+
+	JDY18Driver_ParseScanResponse((char*)uartBuffer, scan);
 }
