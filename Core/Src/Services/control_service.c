@@ -33,9 +33,9 @@ void ControlService_Init(ControlParamsHandleTypeDef *handler)
 	SG90Driver_SetPosition(handler->htimServo, handler->channelServo, 0);
 	L293DDriver_Init(&handlerMotor, handler->periodMotor);
 	L293DDriver_SetSpeed(&handlerMotor, 1.0);
-	HAL_Delay(30000);
+	HAL_Delay(300);
 	L293DDriver_SendControl(&handlerMotor, M1_FORWARD);
-	HAL_Delay(15000);
+	HAL_Delay(150);
 	L293DDriver_SendControl(&handlerMotor, M1_STOP);
 }
 
@@ -57,7 +57,7 @@ void ControlService_Proportional(ControlParamsHandleTypeDef *handler, float mast
 		if (!isMoving)
 		{
 			isMoving = !isMoving;
-			L293DDriver_SendControl(&handlerMotor, M1_FORWARD);
+			// L293DDriver_SendControl(&handlerMotor, M1_FORWARD);
 		}
 	}
 }

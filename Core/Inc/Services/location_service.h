@@ -22,10 +22,11 @@
 #define SLAVE_BEACON_NAME_B3 "PSE2022_B3"
 #define PRECISION_BLE_METERS 0.5
 
-#define MEASURED_POWER -82
+#define MEASURED_POWER -54
 
 #include "stdbool.h"
 #include "stm32f4xx.h"
+#include "Drivers/jdy18_driver.h"
 
 typedef struct {
 	float latitude;
@@ -74,5 +75,7 @@ float LocationService_GetArrivalAngle();
  * @return	true if the boat is in the destiny, false otherwise.
  */
 bool LocationService_IsInDestiny();
+
+device_t LocationService_B3();
 
 #endif /* __LOCATION_SERVICE_H */

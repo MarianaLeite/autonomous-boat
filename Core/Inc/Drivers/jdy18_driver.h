@@ -23,8 +23,8 @@
 #define END_RESPONSE_SCAN "+STOP:SCAN"
 
 #define MAX_SIZE_DATA 30
-#define MAX_SIZE_UART_BUFFER 1000
-#define MAX_DEVICE_LIST 10
+#define MAX_SIZE_UART_BUFFER 5000
+#define MAX_DEVICE_LIST 50
 #define MAC_ADDRESS_SIZE 12
 #define MAX_DEVICE_NAME_SIZE 30
 
@@ -147,6 +147,14 @@ void JDY18Driver_InquireDevices(UART_HandleTypeDef* huart);
 /**
  * @brief Return the latest scanned devices.
  * 
+ * @param handler pointer to module handler.
+ * @param scan structure where devices information are located.
+void JDY18Driver_GetScannedDevices(JDY18_HandleTypeDef* handler, scan_t* scan);
+ */
+
+/**
+ * @brief Return the latest scanned devices.
+ * 
  * @param scan scan_t pointer to structure where devices information are located.
  */
 void JDY18Driver_GetScannedDevices(scan_t* scan);
@@ -174,5 +182,13 @@ void JDY18Driver_ParseScanResponse(char* scanResponse, scan_t* scan);
  * @param huart UART_HandleTypeDef pointer to UART handler associated to the Bluetooth module.
  */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
+
+/**
+ * @brief Scan devices in blocking mode.
+ * 
+ * @param huart UART_HandleTypeDef pointer to UART handler associated to the Bluetooth module.
+ * @param scan pointer to structure that should be populated.
+ */
+void JDY18Driver_ScanInBlockingMode(UART_HandleTypeDef* huart, scan_t* scan);
 
 #endif /* __JDY18_DRIVER_H */

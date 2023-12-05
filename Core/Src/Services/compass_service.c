@@ -117,6 +117,23 @@ float CompassService_CalculateAngle(int16_t x_axis, int16_t y_axis, CompassCalib
 		heading -= 2 * M_PI;
 	}
 
+	float a = 0.0200973;
+	float b = -0.171254;
+	float c = 1.36066;
+	float d = -0.454948;
+
+	heading = a * pow(heading, 3) + b * pow(heading, 2) + c * heading + d;
+
+	while (heading < 0)
+	{
+		heading += 2 * M_PI;
+	}
+
+	while (heading >= 2 * M_PI)
+	{
+		heading -= 2 * M_PI;
+	}
+
 	float degress = heading * 180.00 / M_PI;
 
 	return degress;

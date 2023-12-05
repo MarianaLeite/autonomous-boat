@@ -37,6 +37,7 @@ typedef struct {
 	float compassAngle;
   float arrivalAngle;
   bool isInDestiny;
+  device_t b3;
 } boat_properties_t;
 /* USER CODE END PTD */
 
@@ -630,7 +631,8 @@ void StartLocationTask(void const * argument)
     object_data->masterLocation = LocationService_GetLocation();
     object_data->arrivalAngle = LocationService_GetArrivalAngle();
     object_data->isInDestiny = LocationService_IsInDestiny();
-    osDelay(100);
+    object_data->b3 = LocationService_B3();
+    osDelay(500);
   }
   /* USER CODE END StartLocationTask */
 }
@@ -652,7 +654,7 @@ void StartCompassTask(void const * argument)
   {
     CompassService_UpdateCompassAngle();
     object_data->compassAngle = CompassService_GetCompassAngle();
-    osDelay(50);
+    osDelay(100);
   }
   /* USER CODE END StartCompassTask */
 }
@@ -678,7 +680,7 @@ void StartControlTask(void const * argument)
   for(;;)
   {
     ControlService_Proportional(&handlerControl, object_data->masterLocation.latitude, object_data->compassAngle, object_data->arrivalAngle, object_data->isInDestiny);
-    osDelay(1);
+    osDelay(100);
   }
   /* USER CODE END StartControlTask */
 }

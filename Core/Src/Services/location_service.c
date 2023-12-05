@@ -11,7 +11,6 @@
  */
 
 #include "Services/location_service.h"
-#include "Drivers/jdy18_driver.h"
 #include "Services/data_filter_service.h"
 
 #include <math.h>
@@ -36,6 +35,9 @@ location_t masterLocation = { 0, 0 };
 float trilaterationCalcCPartial = 0;
 float trilaterationCalcFPartial = 0;
 
+float b1Distance = -1, b2Distance = -1, b3Distance = -1;
+device_t b3;
+
 void LocationService_Init(UART_HandleTypeDef *huart)
 {
 	bleHandler.huart = huart;
@@ -58,14 +60,15 @@ void LocationService_Init(UART_HandleTypeDef *huart)
 
 float LocationService_CalculateDistance(int rssi)
 {
-	return pow(10, ((MEASURED_POWER - rssi) / 20));
+	return pow(10.0, ((float)(MEASURED_POWER - rssi) / 20.0));
 }
 
 void LocationService_UpdateLocation()
 {
 	scan_t scannedDevices;
-	float b1Distance = -1, b2Distance = -1, b3Distance = -1;
 
+	// JDY18Driver_GetScannedDevices(&bleHandler, &scannedDevices);
+	
 	JDY18Driver_GetScannedDevices(&scannedDevices);
 
 	for(size_t i = 0; i < scannedDevices.size; i++) {
@@ -77,6 +80,7 @@ void LocationService_UpdateLocation()
 		} else if(strstr(deviceName, SLAVE_BEACON_NAME_B2) != NULL) {
 			b2Distance = DataFilterService_MovingAverage(&b2Buffer, LocationService_CalculateDistance(rssi));
 		} else if(strstr(deviceName, SLAVE_BEACON_NAME_B3) != NULL) {
+			b3 = scannedDevices.devices[i];
 			b3Distance = DataFilterService_MovingAverage(&b3Buffer, LocationService_CalculateDistance(rssi));
 		}
 	}
@@ -93,12 +97,20 @@ void LocationService_UpdateLocation()
 		masterLocation.latitude= (trilaterationCalcC*trilaterationCalcD - trilaterationCalcA*trilaterationCalcF)/(trilaterationCalcB*trilaterationCalcD - trilaterationCalcA*trilaterationCalcE);
 	}
 
+	printf("\n\r%d", (int)(b3Distance*100));
+	//printf("\n\r%d", (int)(scannedDevices.size));
+
 	JDY18Driver_InquireDevices(bleHandler.huart);
 }
 
 location_t LocationService_GetLocation()
 {
 	return masterLocation;
+}
+
+device_t LocationService_B3()
+{
+	return b3;
 }
 
 float LocationService_GetArrivalAngle()
